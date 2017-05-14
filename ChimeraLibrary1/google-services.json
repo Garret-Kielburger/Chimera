@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "840829675709",
+    "firebase_url": "https://chimera-test.firebaseio.com",
+    "project_id": "chimera-test",
+    "storage_bucket": "chimera-test.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:840829675709:android:8052266802aaeb7f",
+        "android_client_info": {
+          "package_name": "com.garret.chimera"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "840829675709-29f6h41gi2dloiosaelapksrbu8egohg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNwbxFnA0sK81t16TdNEJcI_GH2RVe0Ks"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
