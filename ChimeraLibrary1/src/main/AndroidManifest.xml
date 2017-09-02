@@ -16,22 +16,31 @@
 
         <activity android:name=".ChimeraMainActivity">
             <intent-filter>
+                <!--todo: remove main activity?-->
                 <action android:name="android.intent.action.MAIN" />
-
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SplashActivity"
+            android:theme="@style/SplashTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <!-- Services -->
 
-        <service android:name="com.garret.chimera.Firebase.FirebasePushMessenger"
+        <service
+            android:name=".Firebase.FirebasePushMessenger"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-        <service android:name="com.garret.chimera.Firebase.MyFirebaseInstanceIDService"
+        <service
+            android:name=".Firebase.MyFirebaseInstanceIDService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -39,6 +48,22 @@
             </intent-filter>
         </service>
 
+        <activity
+            android:name=".BottomNavigationActivity"
+            android:label="@string/title_activity_bottom_navigation" />
+        <activity
+            android:name=".NavigationDrawerActivity"
+            android:label="@string/title_activity_navigation_drawer"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <service
+            android:name=".ServerApi.ApiService"
+            android:exported="false"></service>
+
+        <activity
+            android:name=".TabNavigationActivity"
+            android:label="@string/title_activity_tab_navigation"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

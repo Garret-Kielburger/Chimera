@@ -4,22 +4,29 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.garret.chimera.ChimeraMainActivity;
 import com.garret.chimera.R;
-import com.garret.chimera.ServerApi.ApiUtilities;
+import com.garret.chimera.ServerApi.ApiService;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Map;
 
+import static com.garret.chimera.Constants.ACCESS_TOKEN_TIME;
+
 public class FirebasePushMessenger extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseIIDService";
+    private long token_time;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor prefsEditor;
 
     public FirebasePushMessenger() {
     }
@@ -40,9 +47,24 @@ public class FirebasePushMessenger extends FirebaseMessagingService {
 
             Log.d(TAG, "Unpack Data: " + data.get("sync"));
 
+            //Sync the database
+
             if (data.get("sync").equals("sync")){
-                // todo: call this asyncronously! - wait for finish and update screen if it's open
-                updateDatabase();
+                sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+                if (TokenIsFresh()) {
+                    //Get server data
+                    ApiService.startFetchServerDataForForeground(this);
+                    ApiService.BroadcastUI(this);
+
+                } else {
+                    //get Token, then get server data
+                    //todo: optimize intentservice class to call these three sequentially instead of requiring differnt instances
+                    ApiService.startFetchTokenForForeground(this);
+                    ApiService.startFetchServerDataForForeground(this);
+                    ApiService.BroadcastUI(this);
+                }
+
             }
         }
 
@@ -50,9 +72,21 @@ public class FirebasePushMessenger extends FirebaseMessagingService {
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
 
-            // if data has "message" field
+            // if data has notification field
             sendNotification(remoteMessage.getNotification());
+        }
+    }
 
+
+    private boolean TokenIsFresh() {
+        token_time = sharedPreferences.getLong(ACCESS_TOKEN_TIME, 0);
+        long now = System.currentTimeMillis();
+
+        // check for 55 minutes, so that it doesn't expire in the middle of transaction
+        if ((token_time == 0) || ((now - token_time) > 3300000)) {
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -83,12 +117,4 @@ public class FirebasePushMessenger extends FirebaseMessagingService {
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
 
     }
-
-
-    private void updateDatabase() {
-        Log.d("UpdateDatabase(): ", "This method is run");
-        ApiUtilities.fetchServerData(this);
-
-    }
-
 }

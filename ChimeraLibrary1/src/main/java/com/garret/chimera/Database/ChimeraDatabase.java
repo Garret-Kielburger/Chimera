@@ -19,12 +19,13 @@ import com.garret.chimera.DataObjects.IDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
 import com.garret.chimera.DataObjects.TextfieldDataObject;
 import com.garret.chimera.DataObjects.ScreenDataObject;
-import com.garret.chimera.ViewObjects.Textfield;
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
+import static android.provider.Contacts.SettingsColumns.KEY;
 
 public class ChimeraDatabase extends SQLiteAssetHelper {
 
@@ -46,7 +47,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     //TODO: Create dynamic fields from push data - assume all fields and leave out nulls?
 
     //  Column names
-    private static final String KEY_ID = "_id";
+    private static final String KEY_ID = "id";
     private static final String KEY_SCREEN_UUID = "screen_uuid";
     private static final String KEY_PURPOSE = "purpose";
     private static final String KEY_HORIZONTAL_ALIGN = "horizontal_align";
@@ -74,8 +75,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     private ArrayList<IDataObject> interfaceDataObjectList = new ArrayList<IDataObject>();
     private ScreenDataObject current_screen = new ScreenDataObject();
 
-    //todo: change number_of_pages to # of screens, etc
     private int number_of_screens;
+    private ArrayList<String> titles = new ArrayList<String>();
 
     public String screen_uuid;
 
@@ -191,8 +192,10 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         // GET screen by screen_count integer ordered by screen order.
 
         try {
-            int offsetter = screen_count_i - 1;
-            //int offsetter = 1;
+            // offsetter needed for regular screens functioning was screen_count_i - 1;
+            //int offsetter = screen_count_i - 1;
+            int offsetter = screen_count_i;
+
             SQLiteDatabase db = getReadableDatabase();
             String query = "SELECT * FROM " + TABLE_SCREENS + " ORDER BY " + KEY_SCREEN_ORDER + " ASC LIMIT 1 OFFSET " + offsetter;
             Cursor cursor = db.rawQuery(query, null);
@@ -328,7 +331,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
                     textfieldList.add(tdo);
 
                 } while (textCursor.moveToNext());
-            }
+            } textCursor.close();
+            db.close();
             return textfieldList;
 
 
@@ -336,6 +340,29 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             Log.e("All Textfields error: ", "" + e);
         }
         return textfieldList;
+    }
+
+    public ArrayList<String> GetScreenNames() {
+        titles.clear();
+
+        try {
+            String titleQuery = "SELECT * FROM " + TABLE_TEXTS + " WHERE " + KEY_PURPOSE + " = 'title' ";
+            SQLiteDatabase db = getReadableDatabase();
+            Cursor titleCursor = db.rawQuery(titleQuery, null);
+
+            if (titleCursor.moveToFirst()) {
+                do {
+                    titles.add(titleCursor.getString(5));
+                } while (titleCursor.moveToNext());
+            } titleCursor.close();
+            db.close();
+        } catch (Exception e) {
+            Log.e("Screen Titles error: ", "" + e);
+        }
+
+
+
+        return titles;
     }
 
     public ArrayList<ImageDataObject> Get_All_Images() {
@@ -367,13 +394,13 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         return imageList;
     }
 
-    public ArrayList<ScreenDataObject> Get_All_Screens() {
+    public ArrayList<ScreenDataObject> Get_All_Screens_Metadata() {
 
         try {
             screenList.clear();
-            String imageQuery = "SELECT * FROM " + TABLE_SCREENS;
+            String screensQuery = "SELECT * FROM " + TABLE_SCREENS + " ORDER BY " + KEY_SCREEN_ORDER;
             SQLiteDatabase db = getReadableDatabase();
-            Cursor cursor = db.rawQuery(imageQuery, null);
+            Cursor cursor = db.rawQuery(screensQuery, null);
 
             if (cursor.moveToFirst()) {
                 do {
@@ -385,6 +412,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
                 } while (cursor.moveToNext());
             }
+            cursor.close();
+            db.close();
             return screenList;
 
         } catch (Exception e) {
@@ -428,7 +457,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
     // Getting Total number of Online Images
     public int Get_Total_Count() {
-        String countQuery = "SELECT  * FROM " + TABLE_SCREENS;
+        String countQuery = "SELECT * FROM " + TABLE_SCREENS;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
         cursor.close();
@@ -450,5 +479,160 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         number_of_screens = (int) count;
 
         return number_of_screens;
+    }
+
+    public int Get_Navigation_Type(){
+        int nav_id = 0;
+
+        try {
+            //todo: add --> + " WHERE " + KEY_APP_NAME + "= "  --> after storing app name in shared prefs, etc
+            String appQuery = "SELECT "+ KEY_NAVIGATION_ID +" FROM " + TABLE_APP_DATA;
+            SQLiteDatabase db = getReadableDatabase();
+            Cursor navIdCursor = db.rawQuery(appQuery, null);
+
+
+            if (navIdCursor.moveToFirst()) {
+                do {
+                    // App Data Table: however, only selecting navigation_id, therefore need element 0
+                    // fields: id       (0)     int
+                    // app_name         (1)     String
+                    // navigation_id    (2)     int
+                    nav_id = navIdCursor.getInt(0);
+                } while (navIdCursor.moveToNext());
+            }
+            navIdCursor.close();
+            db.close();
+
+            return nav_id;
+
+        } catch (Exception e) {
+            //todo: handle excepetion
+            Log.e("Navigation Id error: ", "exception: " + e);
+
+        }
+
+        return nav_id;
+    }
+
+
+    public ArrayList<IDataObject> getScreenDataByUuid(String uuid) {
+        interfaceDataObjectList.clear();
+
+        // GET screen by screen_count integer ordered by screen order.
+
+        try {
+
+            SQLiteDatabase db = getReadableDatabase();
+            String query = "SELECT * FROM " + TABLE_SCREENS + " WHERE " + KEY_UUID + " =?";
+            Cursor cursor  = db.rawQuery(query, new String[] {uuid} );
+
+            Log.e("Screen offset cursor", DatabaseUtils.dumpCursorToString(cursor));
+
+            if (cursor.moveToFirst()) {
+                do {
+                    // fields:
+                    // id (0)           int
+                    // uuid (1)         String
+                    // screen_name (2)  String
+
+                    ScreenDataObject sdo = new ScreenDataObject();
+                    sdo.setUuid(cursor.getString(1));
+                    sdo.setName(cursor.getString(2));
+                    sdo.setOrder(cursor.getInt(3));
+                    screen_uuid = sdo.getUuid();
+
+                    // note: screen will always be the first element of the returned array (need it for name, etc)
+                    //interfaceDataObjectList.add(sdo);
+
+                    current_screen = sdo;
+
+                } while (cursor.moveToNext());
+            }
+
+            cursor.close();
+
+            // Get Text data
+
+            String textQuery = "SELECT * FROM " + TABLE_TEXTS + " WHERE " + KEY_SCREEN_UUID + " = ?";
+            Cursor textCursor = db.rawQuery(textQuery, new String[] {screen_uuid.toString()} );
+
+            if (textCursor.moveToFirst()) {
+                do {
+                    // fields: id       (0)     int
+                    // screen_uuid      (1)     String
+                    // purpose          (2)     String
+                    // vertical align   (3)     int
+                    // horizontal align (4)     int
+                    // content          (5)     String]
+                    TextfieldDataObject tdo = new TextfieldDataObject();
+                    //tdo.setScreenUuid(textCursor.getString(1));  ---> Screen UUID needed in each element?
+                    tdo.setPurpose(textCursor.getString(2));
+                    tdo.setVerticalAlign(textCursor.getInt(3));
+                    //todo: remove old debug Logs
+                    Log.i("Textfield getVerticalAlign()", tdo.getVerticalAlign().toString());
+
+                    tdo.setHorizontalAlign(textCursor.getInt(4));
+                    tdo.setContent(textCursor.getString(5));
+
+                    //Log.i("<====== TEXT CURSOR ======> ", DatabaseUtils.dumpCursorToString(textCursor));
+
+
+                    interfaceDataObjectList.add(tdo);
+
+                } while (textCursor.moveToNext());
+            }
+
+            textCursor.close();
+
+            // Get Image data
+
+            String imageQuery = "SELECT * FROM " + TABLE_IMAGES + " WHERE " + KEY_SCREEN_UUID + " = ?";
+            Cursor imageCursor = db.rawQuery(imageQuery, new String[] {screen_uuid.toString()} );
+
+            if (imageCursor.moveToFirst()) {
+                do {
+                    // fields: id       (0)     int
+                    // screen_uuid      (1)     String
+                    // purpose          (2)     String
+                    // vertical align   (3)     int
+                    // horizontal align (4)     int
+                    // content          (5)     String]
+                    ImageDataObject ido = new ImageDataObject();
+                    ido.setPurpose(imageCursor.getString(2));
+                    ido.setVerticalAlign(imageCursor.getInt(3));
+                    //todo: remove old debug Logs
+                    Log.i("Image getVerticalAlign()", ido.getVerticalAlign().toString());
+                    ido.setHorizontalAlign(imageCursor.getInt(4));
+                    ido.setUri(imageCursor.getString(5));
+
+                    //Log.i("<====== IMAGE CURSOR ======>", DatabaseUtils.dumpCursorToString(imageCursor));
+
+                    interfaceDataObjectList.add(ido);
+
+                } while (imageCursor.moveToNext());
+            }
+
+            imageCursor.close();
+            db.close();
+
+            // order top to bottom by vertical align before adding screen to ArrayList
+            Collections.sort(interfaceDataObjectList, new Comparator<IDataObject>(){
+                @Override
+                public int compare(IDataObject lhs, IDataObject rhs) {
+                    return Integer.valueOf(lhs.getVerticalAlign().compareTo(rhs.getVerticalAlign()));
+                }
+            });
+
+            interfaceDataObjectList.add(current_screen);
+
+            db.close();
+            return interfaceDataObjectList;
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            Log.e("getScreenDataByUuid():", "exception: " + e);
+        }
+        return interfaceDataObjectList;
+
     }
 }

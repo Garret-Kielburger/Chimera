@@ -3,6 +3,8 @@ package com.garret.chimera.ServerApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -31,6 +33,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static com.garret.chimera.Constants.ACCESS_TOKEN;
+import static com.garret.chimera.Constants.ACCESS_TOKEN_TIME;
 import static com.garret.chimera.Constants.CLIENT_ID;
 import static com.garret.chimera.Constants.CLIENT_SECRET;
 import static com.garret.chimera.Constants.EXPIRY;
@@ -62,6 +65,9 @@ public class ApiUtilities {
     //todo: replace possibility of infinite loop between fetchServerData() and getToken()
     public static void fetchServerData(Context context) {
 
+        boolean isUiThread = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? Looper.getMainLooper().isCurrentThread()
+                : Thread.currentThread() == Looper.getMainLooper().getThread();
+        Log.i("fetchServerData Ui Thread? ", "boolean: " + isUiThread);
 
         // Step 1 - check shared prefs for existing, valid token
 
@@ -90,7 +96,9 @@ public class ApiUtilities {
     }
 
     static void getToken(Context context) {
-
+        boolean isUiThread = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? Looper.getMainLooper().isCurrentThread()
+                : Thread.currentThread() == Looper.getMainLooper().getThread();
+        Log.i("getToken() Ui Thread? ", "boolean: " + isUiThread);
         Map<String, String> map = new HashMap<String, String>();
 
         map.put(HEADER_TAG_GRANT_TYPE, GRANT_TYPE);
@@ -141,7 +149,7 @@ public class ApiUtilities {
             }
         }
 
-        fetchServerData(context);
+        //fetchServerData(context);
     }
 
 
@@ -223,6 +231,7 @@ public class ApiUtilities {
 
                         editor = prefs.edit();
                         editor.putString(ACCESS_TOKEN, token);
+                        editor.putLong(ACCESS_TOKEN_TIME, System.currentTimeMillis());
                         editor.putString(TOKEN_TYPE, result.getString("token_type"));
                         editor.putInt(EXPIRY, result.getInt("expires_in"));
 
@@ -241,7 +250,7 @@ public class ApiUtilities {
     }
 
 
-    private static void getDataFromServer(String endpoint, String token, Context context) throws IOException {
+    protected static void getDataFromServer(String endpoint, String token, Context context) throws IOException {
 
         URL url;
         try {
@@ -304,6 +313,10 @@ public class ApiUtilities {
 
                             db.SaveAppData(addo);
                         }
+
+                        boolean isUiThread = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? Looper.getMainLooper().isCurrentThread()
+                                : Thread.currentThread() == Looper.getMainLooper().getThread();
+                        Log.i("GetDataFromServer Ui Thread? ", "boolean: " + isUiThread);
 
                         //todo: change from "everything" to "screens" on chimera and manticore both
 
@@ -385,18 +398,17 @@ public class ApiUtilities {
 
             Log.d(TAG, "so far so good");
 
-            //SendUIUpdateBroadcast(context);
-            // todo: only do this if the window is open, otherwise wait
-            Intent intent = new Intent(Constants.UPDATE_UI);
+            // todo: only do this if the app window is open, otherwise wait
+         /*   Intent intent = new Intent(Constants.UPDATE_UI);
             LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-
+*/
         }
     }
 
-    private static void SendUIUpdateBroadcast(Context context) {
+/*    private static void SendUIUpdateBroadcast(Context context) {
         Intent intent = new Intent(Constants.UPDATE_UI);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-    }
+    }*/
 
 
 }

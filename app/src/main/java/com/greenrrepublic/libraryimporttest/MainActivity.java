@@ -8,6 +8,7 @@ import android.widget.Button;
 
 import com.garret.chimera.ChimeraMainActivity;
 import com.garret.chimera.Constants;
+import com.garret.chimera.SplashActivity;
 
 import java.util.regex.Pattern;
 
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     public void RunLibrary(View v){
         Intent i = new Intent(this, ChimeraMainActivity.class);
         startActivity(i);
+
+        finish();
 
     }
 

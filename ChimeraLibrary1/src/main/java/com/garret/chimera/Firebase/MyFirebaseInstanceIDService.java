@@ -37,6 +37,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         Log.i(TAG, "SENDING REGISTRATION TO BACK END: deviceID: " + deviceId + " AND regID: " + token);
+        //todo: if this fails, need to do it gain elsewhere in the app - ie splash screen startup? Sharedprefs boolean isRegistered?
         RegisterUtilities.register(this, deviceId, token);
 
 

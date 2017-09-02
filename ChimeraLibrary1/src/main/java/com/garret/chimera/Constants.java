@@ -10,7 +10,14 @@ import java.util.Random;
  */
 public interface Constants {
 
-    /**
+   /**
+    * Shared Preferences strings and values
+    */
+
+   public static final String RUN_ONCE = "run_once";
+   public static final String IS_OPEN = "is_open";
+
+   /**
      * Tag name for logging.
      */
 
@@ -70,7 +77,10 @@ public interface Constants {
 
     static final String ACCESS_TOKEN = "access_token";
 
-    static final String TOKEN_TYPE = "token_type";
+   public static final String ACCESS_TOKEN_TIME = "token_time";
+
+
+   static final String TOKEN_TYPE = "token_type";
 
     static final String EXPIRY = "expires_in";
 

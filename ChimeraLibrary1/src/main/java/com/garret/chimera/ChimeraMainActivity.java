@@ -65,8 +65,8 @@ public class ChimeraMainActivity extends AppCompatActivity {
         //          - and in onPostExecute(), update db and UI
         //      - if yes, update db and update UI
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mSyncReceiver, new IntentFilter(UPDATE_UI));
+/*        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mSyncReceiver, new IntentFilter(UPDATE_UI));*/
     }
 
     private BroadcastReceiver mSyncReceiver = new BroadcastReceiver() {
@@ -74,7 +74,7 @@ public class ChimeraMainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             //String action = intent.getAction();
-            if (!(intent == null)){
+            if (intent != null){
                 Log.d("BroadcastReceive intent", intent.toString());
             }
 
