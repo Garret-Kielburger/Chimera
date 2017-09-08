@@ -15,6 +15,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.garret.chimera.DataObjects.AppDataDataObject;
+import com.garret.chimera.DataObjects.ConstraintDataObject;
 import com.garret.chimera.DataObjects.IDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
 import com.garret.chimera.DataObjects.TextfieldDataObject;
@@ -33,7 +34,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
     //TODO: Create contstructor for new Tables (as pages/screens) - ie using data from push
 
-    private static String DB_NAME = "Chimera.db";
+    private static String DB_NAME = "Chimera1.db";
     private static final int DB_VERSION = 1;
 
     // Tables
@@ -42,6 +43,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     public static final String TABLE_SCREENS = "screens";
     public static final String TABLE_TEXTS = "texts";
     public static final String TABLE_IMAGES = "images";
+    public static final String TABLE_CONSTRAINTS = "constraints";
 
     // Manticore-Chimera Screens Table Columns names
     //TODO: Create dynamic fields from push data - assume all fields and leave out nulls?
@@ -69,11 +71,19 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     // images Column names
     public static final String KEY_URI = "uri";
 
+    // constraint Column names
+    public static final String KEY_START_ID = "start_id";
+    public static final String KEY_START_SIDE = "start_side";
+    public static final String KEY_END_ID = "end_id";
+    public static final String KEY_END_SIDE = "end_side";
+    public static final String KEY_MARGIN = "margin";
+
     private ArrayList<ImageDataObject> imageList = new ArrayList<ImageDataObject>();
     private ArrayList<TextfieldDataObject> textfieldList = new ArrayList<TextfieldDataObject>();
     private ArrayList<ScreenDataObject> screenList = new ArrayList<ScreenDataObject>();
     private ArrayList<IDataObject> interfaceDataObjectList = new ArrayList<IDataObject>();
     private ScreenDataObject current_screen = new ScreenDataObject();
+    private ArrayList<ConstraintDataObject> constraints = new ArrayList<ConstraintDataObject>();
 
     private int number_of_screens;
     private ArrayList<String> titles = new ArrayList<String>();
@@ -133,14 +143,14 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     public void SaveTextData(TextfieldDataObject tdo) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
-
+        values.put(KEY_UUID, tdo.getUuid());
         values.put(KEY_SCREEN_UUID, tdo.getScreenUuid());
         values.put(KEY_PURPOSE, tdo.getPurpose());
         values.put(KEY_VERTICAL_ALIGN, tdo.getVerticalAlign());
         values.put(KEY_HORIZONTAL_ALIGN, tdo.getHorizontalAlign());
         values.put(KEY_CONTENT, tdo.getContent());
 
-        db.insert(TABLE_TEXTS, null, values);
+        //db.insert(TABLE_TEXTS, null, values);
         db.close();
         Log.i(TAG, "Text Data Saved");
 
@@ -149,16 +159,31 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     public void SaveImageData(ImageDataObject ido) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
-
+        values.put(KEY_UUID, ido.getUuid());
         values.put(KEY_SCREEN_UUID, ido.getScreenUuid());
         values.put(KEY_PURPOSE, ido.getPurpose());
         values.put(KEY_VERTICAL_ALIGN, ido.getVerticalAlign());
         values.put(KEY_HORIZONTAL_ALIGN, ido.getHorizontalAlign());
         values.put(KEY_URI, ido.getUri());
 
-        db.insert(TABLE_IMAGES, null, values);
+        //db.insert(TABLE_IMAGES, null, values);
         db.close();
         Log.i(TAG, "Image Data Saved");
+    }
+
+    public void SaveConstraintData(ConstraintDataObject cdo) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_SCREEN_UUID, cdo.getScreenUuid());
+        values.put(KEY_START_ID, cdo.getStartId());
+        values.put(KEY_START_SIDE, cdo.getStartSide());
+        values.put(KEY_END_ID, cdo.getEndId());
+        values.put(KEY_END_SIDE, cdo.getEndSide());
+        values.put(KEY_MARGIN, cdo.getMargin());
+
+        db.insert(TABLE_CONSTRAINTS, null, values);
+        db.close();
+        Log.i(TAG, "Constraint Data Saved");
     }
 
     /**
@@ -426,13 +451,15 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     //Omit Update method for now - this is a read-only application
 
 
-    // Delete all from Image, Text and Screen Tables
+    // todo:  reimplement! Delete all from Image, Text and Screen Tables
     public void Delete_All() {
+        Log.e("DELETE_ALL", "DB Deleted");
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_IMAGES, null, null);
-        db.delete(TABLE_TEXTS, null, null);
+        //db.delete(TABLE_IMAGES, null, null);
+       // db.delete(TABLE_TEXTS, null, null);
         db.delete(TABLE_SCREENS, null, null);
         db.delete(TABLE_APP_DATA, null, null);
+        //db.delete(TABLE_CONSTRAINTS, null, null);
         db.close();
     }
 
@@ -559,20 +586,22 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             if (textCursor.moveToFirst()) {
                 do {
                     // fields: id       (0)     int
-                    // screen_uuid      (1)     String
-                    // purpose          (2)     String
-                    // vertical align   (3)     int
-                    // horizontal align (4)     int
-                    // content          (5)     String]
+                    // uuid             (1)     String
+                    // screen_uuid      (2)     String
+                    // purpose          (3)     String
+                    // vertical align   (4)     int
+                    // horizontal align (5)     int
+                    // content          (6)     String]
                     TextfieldDataObject tdo = new TextfieldDataObject();
                     //tdo.setScreenUuid(textCursor.getString(1));  ---> Screen UUID needed in each element?
-                    tdo.setPurpose(textCursor.getString(2));
-                    tdo.setVerticalAlign(textCursor.getInt(3));
+                    tdo.setUuid(textCursor.getString(1));
+                    tdo.setPurpose(textCursor.getString(3));
+                    tdo.setVerticalAlign(textCursor.getInt(4));
                     //todo: remove old debug Logs
                     Log.i("Textfield getVerticalAlign()", tdo.getVerticalAlign().toString());
 
-                    tdo.setHorizontalAlign(textCursor.getInt(4));
-                    tdo.setContent(textCursor.getString(5));
+                    tdo.setHorizontalAlign(textCursor.getInt(5));
+                    tdo.setContent(textCursor.getString(6));
 
                     //Log.i("<====== TEXT CURSOR ======> ", DatabaseUtils.dumpCursorToString(textCursor));
 
@@ -592,18 +621,20 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             if (imageCursor.moveToFirst()) {
                 do {
                     // fields: id       (0)     int
-                    // screen_uuid      (1)     String
-                    // purpose          (2)     String
-                    // vertical align   (3)     int
-                    // horizontal align (4)     int
-                    // content          (5)     String]
+                    // uuid             (1)     String
+                    // screen_uuid      (2)     String
+                    // purpose          (3)     String
+                    // vertical align   (4)     int
+                    // horizontal align (5)     int
+                    // content          (6)     String
                     ImageDataObject ido = new ImageDataObject();
-                    ido.setPurpose(imageCursor.getString(2));
-                    ido.setVerticalAlign(imageCursor.getInt(3));
+                    ido.setUuid(imageCursor.getString(1));
+                    ido.setPurpose(imageCursor.getString(3));
+                    ido.setVerticalAlign(imageCursor.getInt(4));
                     //todo: remove old debug Logs
                     Log.i("Image getVerticalAlign()", ido.getVerticalAlign().toString());
-                    ido.setHorizontalAlign(imageCursor.getInt(4));
-                    ido.setUri(imageCursor.getString(5));
+                    ido.setHorizontalAlign(imageCursor.getInt(5));
+                    ido.setUri(imageCursor.getString(6));
 
                     //Log.i("<====== IMAGE CURSOR ======>", DatabaseUtils.dumpCursorToString(imageCursor));
 
@@ -634,5 +665,84 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         }
         return interfaceDataObjectList;
 
+    }
+
+    public ArrayList<ConstraintDataObject> GetConstraintsByScreenUuid(String uuid){
+        constraints.clear();
+
+        try {
+            SQLiteDatabase db = getReadableDatabase();
+            String query = "SELECT * FROM " + TABLE_CONSTRAINTS + " WHERE " + KEY_SCREEN_UUID + " = ?";
+            Cursor cursor = db.rawQuery(query, new String[]{uuid});
+            Log.i("GetConstraintsByUUID cursor:", DatabaseUtils.dumpCursorToString(cursor));
+            if (cursor.moveToFirst()) {
+                do {
+                    //fields:
+                    // id (0)
+                    // screen_uuid (1)
+                    // start_id (2)
+                    // start_side (3)
+                    // end_id (4)
+                    // end_side (5)
+                    // margin (6)
+                    ConstraintDataObject cdo = new ConstraintDataObject();
+                    cdo.setScreenUuid(uuid);
+                    cdo.setStartId(cursor.getString(2));
+                    cdo.setStartSide(cursor.getString(3));
+                    cdo.setEndId(cursor.getString(4));
+                    cdo.setEndSide(cursor.getString(5));
+                    cdo.setMargin(cursor.getInt(6));
+
+                    constraints.add(cdo);
+
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+            return constraints;
+
+        } catch (Exception e) {
+            Log.e("GetConstraintByUuid():", "Exception:" + e);
+        }
+
+        return constraints;
+    }
+
+    public ArrayList<ConstraintDataObject> GetConstraintsByViewObjectUuid(String uuid){
+        constraints.clear();
+
+        try {
+            SQLiteDatabase db = getReadableDatabase();
+            String query = "SELECT * FROM " + TABLE_CONSTRAINTS + " WHERE " + KEY_START_ID + " = ?";
+            Cursor cursor = db.rawQuery(query, new String[]{ uuid });
+            Log.i("GetConstraintsByUUID cursor:", DatabaseUtils.dumpCursorToString(cursor));
+            if (cursor.moveToFirst()) {
+                do {
+                    //fields:
+                    // screen_uuid (0)
+                    // start_id (1)
+                    // start_side (2)
+                    // end_id (3)
+                    // end_side (4)
+                    // margin (5)
+                    ConstraintDataObject cdo = new ConstraintDataObject();
+                    cdo.setScreenUuid(uuid);
+                    cdo.setStartId(cursor.getString(1));
+                    cdo.setStartSide(cursor.getString(2));
+                    cdo.setEndId(cursor.getString(3));
+                    cdo.setEndSide(cursor.getString(4));
+                    cdo.setMargin(cursor.getInt(5));
+
+                    constraints.add(cdo);
+
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+            return constraints;
+
+        } catch (Exception e) {
+            Log.e("GetConstraintByUuid():", "Exception:" + e);
+        }
+
+        return constraints;
     }
 }

@@ -10,7 +10,7 @@ public class ImageDataObject implements IDataObject {
 
     // private variables
     public int _id;
-
+    public String _uuid;
     public String _screen_uuid;
     public String _purpose;
     public String _uri;
@@ -24,8 +24,9 @@ public class ImageDataObject implements IDataObject {
     }
 
     //constructor
-    public ImageDataObject(int id, String screen_uuid, String purpose, String uri, Integer horizontal_align, Integer vertical_align){
+    public ImageDataObject(int id, String uuid,  String screen_uuid, String purpose, String uri, Integer horizontal_align, Integer vertical_align){
         this._id = id;
+        this._uuid = uuid;
         this._screen_uuid = screen_uuid;
         this._purpose = purpose;
         //this._name = name;
@@ -42,6 +43,14 @@ public class ImageDataObject implements IDataObject {
     // setting ID
     public void setID(int id){
         this._id = id;
+    }
+
+    //getting uuid
+    public String getUuid() { return this._uuid; }
+
+    //setting uuid
+    public void setUuid(String uuid) {
+        this._uuid = uuid;
     }
 
     // getting screen uuid

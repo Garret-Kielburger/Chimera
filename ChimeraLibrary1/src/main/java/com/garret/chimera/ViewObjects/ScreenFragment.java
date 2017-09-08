@@ -3,6 +3,8 @@ package com.garret.chimera.ViewObjects;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.v4.app.Fragment;
 import android.text.Layout;
 import android.util.Log;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.garret.chimera.DataObjects.ConstraintDataObject;
 import com.garret.chimera.DataObjects.IDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
 import com.garret.chimera.DataObjects.TextfieldDataObject;
@@ -20,8 +23,12 @@ import com.garret.chimera.Database.ChimeraDatabase;
 import com.garret.chimera.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import static android.R.attr.key;
 import static android.content.ContentValues.TAG;
+import static com.garret.chimera.R.id.textView;
 
 /**
  * Created by Captain on 22/05/2017.
@@ -33,17 +40,20 @@ import static android.content.ContentValues.TAG;
 public class ScreenFragment extends Fragment {
 
     LinearLayout layout;
+    ConstraintLayout constraintLayout;
     String uuid;
     String screen_name;
     Context context;
     String textOrImage;
     ArrayList<IDataObject> interfaceDataObjectListFromDb;
+    Map<String, View> viewObjectMap = new HashMap<>();
+    ArrayList<ConstraintDataObject> constraints;
 
     ChimeraDatabase db;
     Image img;
-    TextView textfield;
+    TextView textView;
 
-    public ScreenFragment(){
+    public ScreenFragment() {
     }
 
 
@@ -62,7 +72,8 @@ public class ScreenFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.view_object_screen_fragment, container, false);
-        layout = (LinearLayout) v.findViewById(R.id.screenLayout);
+        //layout = (LinearLayout) v.findViewById(R.id.screenLayout);
+        constraintLayout = (ConstraintLayout) v.findViewById(R.id.screenLayout);
         context = getActivity();
 
 /*        TextView tv = new TextView(context);
@@ -87,20 +98,23 @@ public class ScreenFragment extends Fragment {
             if (interfaceDataObjectListFromDb.get(i).getClass() == TextfieldDataObject.class) {
                 TextfieldDataObject tdo = (TextfieldDataObject) interfaceDataObjectListFromDb.get(i);
                 textOrImage = "text";
-                textfield = new TextView(context);
-                textfield.setText(tdo.getContent());
-                LinearLayout.LayoutParams params = SetHorizontalParameters(i, tdo, null);
-                textfield.setLayoutParams(params);
-                layout.addView(textfield);
-
+                textView = new TextView(context);
+                textView.setId(View.generateViewId());
+                textView.setText(tdo.getContent());
+                viewObjectMap.put(tdo.getUuid(), textView);
+                //LinearLayout.LayoutParams params = SetHorizontalParameters(i, tdo, null);
+                //textView.setLayoutParams(params);
+                constraintLayout.addView(textView);
 
             } else if (interfaceDataObjectListFromDb.get(i).getClass() == ImageDataObject.class) {
                 ImageDataObject ido = (ImageDataObject) interfaceDataObjectListFromDb.get(i);
                 textOrImage = "image";
-                LinearLayout.LayoutParams params = SetHorizontalParameters(i, null, ido);
+                //LinearLayout.LayoutParams params = SetHorizontalParameters(i, null, ido);
                 img = new Image(context, ido.getUri());
-                img.imageHolder.setGravity(params.gravity);
-                layout.addView(img);
+                img.setId(View.generateViewId());
+                viewObjectMap.put(ido.getUuid(), img);
+                //img.imageHolder.setGravity(params.gravity);
+                constraintLayout.addView(img);
 
             } else {
                 // Not a text and not an image - what do?
@@ -110,8 +124,13 @@ public class ScreenFragment extends Fragment {
 
         }
 
+        Log.i("The Map: ", viewObjectMap.toString());
+        Log.i("The Map at problem: ", "Number of members: " + viewObjectMap.size());
+
+        Log.i("The Layout: ", constraintLayout.toString());
 
 
+        GetConstraintsParameters(constraintLayout);
 
         return v;
     }
@@ -121,6 +140,79 @@ public class ScreenFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
 
+    }
+
+
+    public void GetConstraintsParameters(ConstraintLayout layout) {
+        ConstraintSet set = new ConstraintSet();
+
+        ArrayList<ConstraintDataObject> cdo = new ArrayList<ConstraintDataObject>();
+        ConstraintDataObject constraintDataObject = new ConstraintDataObject();
+
+        int startSide = 0;
+        int endSide = 0;
+
+        set.clone(layout);
+
+
+/*
+* Idea - go through the view objects and apply constraints
+* */
+        for (String key: viewObjectMap.keySet()) {
+            Log.i("KEY: ", key.toString());
+            //todo: add null checks!
+            cdo = db.GetConstraintsByViewObjectUuid(key);
+            for (int i = 0; i < cdo.size(); i++) {
+                constraintDataObject = cdo.get(i);
+
+                switch (constraintDataObject.getStartSide()) {
+
+                    case "BOTTOM":
+                        startSide = ConstraintSet.BOTTOM;
+                        break;
+
+                    case "TOP":
+                        startSide = ConstraintSet.TOP;
+                        break;
+
+                    case "START":
+                        startSide = ConstraintSet.START;
+                        break;
+
+                    case "END":
+                        startSide = ConstraintSet.END;
+                        break;
+                }
+
+                switch (constraintDataObject.getEndSide()) {
+                    case "BOTTOM":
+                        endSide = ConstraintSet.BOTTOM;
+                        break;
+
+                    case "TOP":
+                        endSide = ConstraintSet.TOP;
+                        break;
+
+                    case "START":
+                        endSide = ConstraintSet.START;
+                        break;
+
+                    case "END":
+                        endSide = ConstraintSet.END;
+                        break;
+                }
+
+                Log.i("constraint object endID", constraintDataObject.getEndId());
+                set.connect(viewObjectMap.get(key).getId(),
+                        startSide,
+                        viewObjectMap.get(constraintDataObject.getEndId()).getId(),
+                        endSide,
+                        constraintDataObject.getMargin());
+            }
+
+        }
+
+        set.applyTo(layout);
     }
 
 
@@ -140,7 +232,7 @@ public class ScreenFragment extends Fragment {
 
         // Set Justification Gravity
 
-        if (tdo != null){
+        if (tdo != null) {
             switch (tdo.getHorizontalAlign()) {
                 case 0:
                 case 1:
@@ -165,7 +257,7 @@ public class ScreenFragment extends Fragment {
                     params.gravity = Gravity.NO_GRAVITY;
                     break;
             }
-        } else if (ido != null){
+        } else if (ido != null) {
             switch (ido.getHorizontalAlign()) {
                 case 0:
                 case 1:
@@ -190,7 +282,7 @@ public class ScreenFragment extends Fragment {
                     params.gravity = Gravity.NO_GRAVITY;
                     break;
             }
-        } else{
+        } else {
             // Should never happen
             Log.e(TAG, "ido and tdo are null? no horizontal params.");
         }
