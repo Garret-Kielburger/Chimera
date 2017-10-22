@@ -82,7 +82,7 @@ public interface Constants {
 
    static final String TOKEN_TYPE = "token_type";
 
-    static final String EXPIRY = "expires_in";
+    static final String TOKEN_EXPIRY = "token_expiry";
 
     /**
      *

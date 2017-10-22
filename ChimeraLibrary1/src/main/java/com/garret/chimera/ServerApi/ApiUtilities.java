@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,7 +37,6 @@ import static com.garret.chimera.Constants.ACCESS_TOKEN;
 import static com.garret.chimera.Constants.ACCESS_TOKEN_TIME;
 import static com.garret.chimera.Constants.CLIENT_ID;
 import static com.garret.chimera.Constants.CLIENT_SECRET;
-import static com.garret.chimera.Constants.EXPIRY;
 import static com.garret.chimera.Constants.GRANT_TYPE;
 import static com.garret.chimera.Constants.HEADER_TAG_CLIENT_ID;
 import static com.garret.chimera.Constants.HEADER_TAG_CLIENT_SECRET;
@@ -46,6 +46,7 @@ import static com.garret.chimera.Constants.PROTECTED_GET_ALL_URL;
 import static com.garret.chimera.Constants.SERVER_URL_REGISTER;
 import static com.garret.chimera.Constants.TAG2;
 import static com.garret.chimera.Constants.TAG;
+import static com.garret.chimera.Constants.TOKEN_EXPIRY;
 import static com.garret.chimera.Constants.TOKEN_TYPE;
 import static com.garret.chimera.Constants.JSON_NODE_SUCCESS;
 import static com.garret.chimera.Constants.JSON_NODE_APP_DATA;
@@ -62,12 +63,12 @@ import static com.garret.chimera.Constants.random;
  */
 public class ApiUtilities {
 
-    //todo: replace possibility of infinite loop between fetchServerData() and getToken()
     public static void fetchServerData(Context context) {
 
         boolean isUiThread = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? Looper.getMainLooper().isCurrentThread()
                 : Thread.currentThread() == Looper.getMainLooper().getThread();
-        Log.i("fetchServerData Ui Thread? ", "boolean: " + isUiThread);
+
+        Log.i("fetchServer Ui Thread? ", "bool: " + isUiThread);
 
         // Step 1 - check shared prefs for existing, valid token
 
@@ -75,22 +76,31 @@ public class ApiUtilities {
 
         String token = prefs.getString(ACCESS_TOKEN, null);
 
-        if (token != null) {
-
-            // step 2 - todo: Check that token is not expired - if expired, get new token. Currently only looking for not null
-            // Implement in future - via timestamp insert in shared prefs to compare against
-
-            // step 3 -  use token to send request to server for data
+        if (token == null) {
+            getToken(context);
+        } else if (tokenIsExpired(prefs)) {
+            getToken(context);
+        } else{
             try {
                 getDataFromServer(PROTECTED_GET_ALL_URL, token, context);
             } catch (IOException e) {
                 Log.e("fetchServerData()", "1 - IO exception: " + e);
-                //todo: just refetch token if exception 401; will need to avoid infinite loop possibility
-                getToken(context);
+                //todo: actually handle error
             }
+        }
 
+    }
+
+    private static boolean tokenIsExpired(SharedPreferences prefs) {
+        float currentTimeInMillis = new Date().getTime();
+        float tokenExpiry = prefs.getFloat(TOKEN_EXPIRY, 0);
+
+        float timeDifference = tokenExpiry - currentTimeInMillis;
+
+        if ((timeDifference > 0) && (3600 > timeDifference)) {
+            return false;
         } else {
-            getToken(context);
+            return true;
         }
 
     }
@@ -226,6 +236,8 @@ public class ApiUtilities {
 
                         // todo: save token to shared preferences, add token from shared prefs to get request for other data
 
+                        float tokenExpiryTime = new Date().getTime() + 3600;
+
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                         SharedPreferences.Editor editor;
 
@@ -233,7 +245,7 @@ public class ApiUtilities {
                         editor.putString(ACCESS_TOKEN, token);
                         editor.putLong(ACCESS_TOKEN_TIME, System.currentTimeMillis());
                         editor.putString(TOKEN_TYPE, result.getString("token_type"));
-                        editor.putInt(EXPIRY, result.getInt("expires_in"));
+                        editor.putFloat(TOKEN_EXPIRY, tokenExpiryTime);
 
                         editor.apply();
                     }
@@ -316,7 +328,7 @@ public class ApiUtilities {
 
                         boolean isUiThread = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? Looper.getMainLooper().isCurrentThread()
                                 : Thread.currentThread() == Looper.getMainLooper().getThread();
-                        Log.i("GetDataFromServer Ui Thread? ", "boolean: " + isUiThread);
+                        Log.i("GetDataFrom Ui Thread? ", "boolean: " + isUiThread);
 
                         //todo: change from "everything" to "screens" on chimera and manticore both
 
