@@ -67,6 +67,7 @@ public class ScreenFragment extends Fragment {
         interfaceDataObjectListFromDb = db.getScreenDataByUuid(uuid);
 
         Log.d("Frag OnCreate UUID: ", uuid);
+        Log.d("interfaceDataobj: ", interfaceDataObjectListFromDb.toString());
     }
 
     @Override
@@ -118,7 +119,8 @@ public class ScreenFragment extends Fragment {
 
             } else {
                 // Not a text and not an image - what do?
-                Log.i(TAG, "Not an image or a text!");
+                Log.i("Making ViewObj Map", "Not an image or a text!");
+                Log.d("interfaceObj:", interfaceDataObjectListFromDb.get(i).toString());
                 textOrImage = "whoops";
             }
 
@@ -128,7 +130,6 @@ public class ScreenFragment extends Fragment {
         Log.i("The Map at problem: ", "Number of members: " + viewObjectMap.size());
 
         Log.i("The Layout: ", constraintLayout.toString());
-
 
         GetConstraintsParameters(constraintLayout);
 
@@ -144,6 +145,7 @@ public class ScreenFragment extends Fragment {
 
 
     public void GetConstraintsParameters(ConstraintLayout layout) {
+        Log.i("GetConstraintParameters", "Started");
         ConstraintSet set = new ConstraintSet();
 
         ArrayList<ConstraintDataObject> cdo = new ArrayList<ConstraintDataObject>();
@@ -153,7 +155,6 @@ public class ScreenFragment extends Fragment {
         int endSide = 0;
 
         set.clone(layout);
-
 
 /*
 * Idea - go through the view objects and apply constraints

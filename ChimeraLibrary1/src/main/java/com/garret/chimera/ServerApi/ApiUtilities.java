@@ -10,6 +10,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.garret.chimera.Constants;
+import com.garret.chimera.DataObjects.ConstraintDataObject;
 import com.garret.chimera.Database.ChimeraDatabase;
 import com.garret.chimera.DataObjects.AppDataDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
@@ -52,6 +53,7 @@ import static com.garret.chimera.Constants.JSON_NODE_APP_DATA;
 import static com.garret.chimera.Constants.JSON_NODE_SCREENS;
 import static com.garret.chimera.Constants.JSON_NODE_TEXTS;
 import static com.garret.chimera.Constants.JSON_NODE_IMAGES;
+import static com.garret.chimera.Constants.JSON_NODE_CONSTRAINTS;
 import static com.garret.chimera.Constants.random;
 
 /**
@@ -321,6 +323,7 @@ public class ApiUtilities {
                         //todo: change from "everything" to "screens" on chimera and manticore both
 
                         JSONArray json_array_screens = result.getJSONArray(JSON_NODE_SCREENS);
+                        Log.d("Screens Array: ", json_array_screens.toString() );
 
                         if (json_array_screens != null) {
 
@@ -346,6 +349,7 @@ public class ApiUtilities {
                                             JSONObject text_obj = text_array.getJSONObject(j);
                                             if (text_obj != null) {
                                                 TextfieldDataObject tdo = new TextfieldDataObject();
+                                                tdo.setUuid(text_obj.getString("uuid"));
                                                 tdo.setScreenUuid(text_obj.getString("screen_uuid"));
                                                 //todo: null checks
                                                 tdo.setPurpose(text_obj.getString("purpose"));
@@ -353,9 +357,9 @@ public class ApiUtilities {
                                                 int verta = Integer.parseInt(va);
                                                 tdo.setVerticalAlign(verta);
 
-                                                Log.d("SET VERTALIGN JSON ==>", text_obj.toString() );
+                                                //Log.d("SET VERTALIGN JSON ==>", text_obj.toString() );
                                                 //tdo.setVerticalAlign(Integer.parseInt(text_obj.getString("vertical_align")));
-                                                tdo.setHorizontalAlign(Integer.parseInt(text_obj.getString("horizontal_align")));
+                                                //tdo.setHorizontalAlign(Integer.parseInt(text_obj.getString("horizontal_align")));
                                                 tdo.setContent(text_obj.getString("content"));
 
                                                 db.SaveTextData(tdo);
@@ -371,13 +375,45 @@ public class ApiUtilities {
                                             if (image_obj != null) {
                                                 ImageDataObject ido = new ImageDataObject();
                                                 // todo: null checks
+                                                ido.setUuid(image_obj.getString("uuid"));
                                                 ido.setScreenUuid(image_obj.getString("screen_uuid"));
                                                 ido.setPurpose(image_obj.getString("purpose"));
-                                                ido.setVerticalAlign(Integer.parseInt(image_obj.getString("vertical_align")));
-                                                ido.setHorizontalAlign(Integer.parseInt(image_obj.getString("horizontal_align")));
+                                                //ido.setVerticalAlign(Integer.parseInt(image_obj.getString("vertical_align")));
+                                                //ido.setHorizontalAlign(Integer.parseInt(image_obj.getString("horizontal_align")));
                                                 ido.setUri(image_obj.getString("uri"));
 
                                                 db.SaveImageData(ido);
+                                            }
+                                        }
+                                    }
+
+                                    Log.d("Constraints JSON", "just started");
+
+                                    JSONArray constraints_array = screens_obj.getJSONArray(JSON_NODE_CONSTRAINTS);
+                                    if (constraints_array != null) {
+                                        Log.i("Constraint JSON ARRAY ==>  ", constraints_array.toString());
+                                        for (int j = 0; j < constraints_array.length() ; j++) {
+                                            JSONObject constraint_obj = constraints_array.getJSONObject(j);
+                                            if (constraint_obj != null) {
+                                                Log.d("Constraint JSON OBJ ==>", constraint_obj.toString());
+                                                ConstraintDataObject cdo = new ConstraintDataObject();
+
+                                                cdo.setScreenUuid(constraint_obj.getString("screen_uuid"));
+                                                //todo: null checks
+                                                Log.d("Start_id:", constraint_obj.getString("start_id"));
+                                                cdo.setStartId(constraint_obj.getString("start_id"));
+                                                cdo.setStartSide(constraint_obj.getString("start_side"));
+                                                cdo.setEndId(constraint_obj.getString("end_id"));
+                                                cdo.setEndSide(constraint_obj.getString("end_side"));
+                                                //cdo.setMargin(constraint_obj.getInt("margin"));
+                                                String marginString = constraint_obj.getString("margin");
+                                                int margin = Integer.parseInt(marginString);
+                                                cdo.setMargin(margin);
+
+                                                //Log.d("SET VERTALIGN JSON ==>", constraint_obj.toString() );
+                                                //tdo.setVerticalAlign(Integer.parseInt(text_obj.getString("vertical_align")));
+
+                                                db.SaveConstraintData(cdo);
                                             }
                                         }
                                     }
