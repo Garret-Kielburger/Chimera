@@ -11,8 +11,10 @@ public interface IDataObject {
     int getID();
     void setID(int id);
 
+/*
     Integer getVerticalAlign();
     void setVerticalAlign(Integer vertical_align);
+*/
 /*
 
     String getName();
