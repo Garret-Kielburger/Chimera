@@ -15,6 +15,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.garret.chimera.DataObjects.AppDataDataObject;
+import com.garret.chimera.DataObjects.ButtonDataObject;
+import com.garret.chimera.DataObjects.ButtonSubscreenDataObject;
 import com.garret.chimera.DataObjects.ConstraintDataObject;
 import com.garret.chimera.DataObjects.IDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
@@ -44,6 +46,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     public static final String TABLE_SCREENS = "screens";
     public static final String TABLE_TEXTS = "texts";
     public static final String TABLE_IMAGES = "images";
+    public static final String TABLE_BUTTONS = "buttons";
+    public static final String TABLE_BUTTONS_SUBSCREENS = "buttons_subscreens";
     public static final String TABLE_CONSTRAINTS = "constraints";
 
     // Manticore-Chimera Screens Table Columns names
@@ -55,7 +59,6 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     private static final String KEY_PURPOSE = "purpose";
     private static final String KEY_HORIZONTAL_ALIGN = "horizontal_align";
     private static final String KEY_VERTICAL_ALIGN = "vertical_align";
-
 
     // app_data Column names
     private static final String KEY_APP_NAME = "app_name";
@@ -71,6 +74,17 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
     // images Column names
     public static final String KEY_URI = "uri";
+
+    // buttons Column names
+    public static final String KEY_WITH_SUB_SCREEN = "with_sub_screen";
+    public static final String KEY_SUB_SCREEN_UUID = "sub_screen_uuid";
+    public static final String KEY_LABEL = "label";
+
+    // buttons_subscreens Column names
+    public static final String KEY_OWNING_BUTTON_UUID = "owning_button_uuid";
+    public static final String KEY_BUTTON_UUID = "button_uuid";
+    public static final String KEY_TEXT_UUID = "text_uuid";
+    public static final String KEY_IMAGE_UUID = "image_uuid";
 
     // constraint Column names
     public static final String KEY_START_ID = "start_id";
@@ -103,9 +117,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
 
     /**
-     *
-     *      Save data (used from API calls)
-     *
+     * Save data (used from API calls)
      */
 
     public void SaveAppData(AppDataDataObject addo) {
@@ -149,8 +161,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         values.put(KEY_UUID, tdo.getUuid());
         values.put(KEY_SCREEN_UUID, tdo.getScreenUuid());
         values.put(KEY_PURPOSE, tdo.getPurpose());
-        values.put(KEY_VERTICAL_ALIGN, tdo.getVerticalAlign());
-        values.put(KEY_HORIZONTAL_ALIGN, tdo.getHorizontalAlign());
+        //values.put(KEY_VERTICAL_ALIGN, tdo.getVerticalAlign());
+        //values.put(KEY_HORIZONTAL_ALIGN, tdo.getHorizontalAlign());
         values.put(KEY_CONTENT, tdo.getContent());
 
         db.insert(TABLE_TEXTS, null, values);
@@ -166,13 +178,48 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         values.put(KEY_UUID, ido.getUuid());
         values.put(KEY_SCREEN_UUID, ido.getScreenUuid());
         values.put(KEY_PURPOSE, ido.getPurpose());
-        values.put(KEY_VERTICAL_ALIGN, ido.getVerticalAlign());
-        values.put(KEY_HORIZONTAL_ALIGN, ido.getHorizontalAlign());
+        //values.put(KEY_VERTICAL_ALIGN, ido.getVerticalAlign());
+        // values.put(KEY_HORIZONTAL_ALIGN, ido.getHorizontalAlign());
         values.put(KEY_URI, ido.getUri());
 
         db.insert(TABLE_IMAGES, null, values);
         db.close();
         Log.i(TAG, "Image Data Saved:");
+        Log.i(TAG, values.toString());
+
+    }
+
+    public void SaveButtonData(ButtonDataObject bdo) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_UUID, bdo.get_uuid());
+        values.put(KEY_SCREEN_UUID, bdo.get_screen_uuid());
+        values.put(KEY_WITH_SUB_SCREEN, bdo.get_with_sub_screen());
+        values.put(KEY_SUB_SCREEN_UUID, bdo.get_sub_screen_uuid());
+        values.put(KEY_LABEL, bdo.get_label());
+        values.put(KEY_PURPOSE, bdo.get_purpose());
+        values.put(KEY_CONTENT, bdo.get_content());
+
+        db.insert(TABLE_BUTTONS, null, values);
+        db.close();
+        Log.i(TAG, "Button Data Saved:");
+        Log.i(TAG, values.toString());
+
+    }
+
+    public void SaveButtonSubscreenData(ButtonSubscreenDataObject bsdo) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_UUID, bsdo.get_uuid());
+        values.put(KEY_SCREEN_UUID, bsdo.get_screen_uuid());
+        values.put(KEY_OWNING_BUTTON_UUID, bsdo.get_owning_button_uuid());
+        values.put(KEY_BUTTON_UUID, bsdo.get_button_uuid());
+        values.put(KEY_TEXT_UUID, bsdo.get_text_uuid());
+        values.put(KEY_IMAGE_UUID, bsdo.get_image_uuid());
+
+        db.insert(TABLE_BUTTONS_SUBSCREENS, null, values);
+        db.close();
+        Log.i(TAG, "Button Subscreen Data Saved:");
         Log.i(TAG, values.toString());
 
     }
@@ -202,23 +249,22 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
     /**
      * Get A Screen by Screen Number (number comes from the count of screens and increments from 0)
+     *
      * @param screen_count_i
      * @return ScreenDataObject ArrayList
-     *
-     *  Goal is to produce an array of content items in the correct top to bottom order
-     *
-     *
+     * <p>
+     * Goal is to produce an array of content items in the correct top to bottom order
+     * <p>
+     * <p>
      * Problem - need to call all records, sort and select, then choose uuid from proper screen from there.
-     *
-     *
+     * <p>
+     * <p>
      * Better way: store list of screens in shared prefs to pass the uuid/order # to the db call for the rest of the data.
-     *
+     * <p>
      * TODO: make list of current screens in SHaredPrefs to get screens by uuid first?
-     *
-     *
      */
 
-    public ArrayList<IDataObject> Get_Screen_Content_By_Screen(int screen_count_i){
+    public ArrayList<IDataObject> Get_Screen_Content_By_Screen(int screen_count_i) {
 
         interfaceDataObjectList.clear();
 
@@ -261,7 +307,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             // Get Text data
 
             String textQuery = "SELECT * FROM " + TABLE_TEXTS + " WHERE " + KEY_SCREEN_UUID + " = ?";
-            Cursor textCursor = db.rawQuery(textQuery, new String[] {screen_uuid.toString()} );
+            Cursor textCursor = db.rawQuery(textQuery, new String[]{screen_uuid.toString()});
             Log.e("Text cursor", DatabaseUtils.dumpCursorToString(textCursor));
 
 
@@ -296,7 +342,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             // Get Image data
 
             String imageQuery = "SELECT * FROM " + TABLE_IMAGES + " WHERE " + KEY_SCREEN_UUID + " = ?";
-            Cursor imageCursor = db.rawQuery(imageQuery, new String[] {screen_uuid.toString()} );
+            Cursor imageCursor = db.rawQuery(imageQuery, new String[]{screen_uuid.toString()});
 
             if (imageCursor.moveToFirst()) {
                 do {
@@ -325,12 +371,12 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             db.close();
 
             // order top to bottom by vertical align before adding screen to ArrayList
-            Collections.sort(interfaceDataObjectList, new Comparator<IDataObject>(){
+/*            Collections.sort(interfaceDataObjectList, new Comparator<IDataObject>(){
                 @Override
                 public int compare(IDataObject lhs, IDataObject rhs) {
                     return Integer.valueOf(lhs.getVerticalAlign().compareTo(rhs.getVerticalAlign()));
                 }
-            });
+            });*/
 
             interfaceDataObjectList.add(current_screen);
 
@@ -366,7 +412,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
                     textfieldList.add(tdo);
 
                 } while (textCursor.moveToNext());
-            } textCursor.close();
+            }
+            textCursor.close();
             db.close();
             return textfieldList;
 
@@ -389,12 +436,12 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
                 do {
                     titles.add(titleCursor.getString(5));
                 } while (titleCursor.moveToNext());
-            } titleCursor.close();
+            }
+            titleCursor.close();
             db.close();
         } catch (Exception e) {
             Log.e("Screen Titles error: ", "" + e);
         }
-
 
 
         return titles;
@@ -428,6 +475,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         }
         return imageList;
     }
+
+
 
     public ArrayList<ScreenDataObject> Get_All_Screens_Metadata() {
 
@@ -468,6 +517,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         db.delete(TABLE_IMAGES, null, null);
         db.delete(TABLE_TEXTS, null, null);
         db.delete(TABLE_SCREENS, null, null);
+        db.delete(TABLE_BUTTONS, null, null);
+        db.delete(TABLE_BUTTONS_SUBSCREENS, null, null);
         db.delete(TABLE_APP_DATA, null, null);
         db.delete(TABLE_CONSTRAINTS, null, null);
         db.close();
@@ -476,7 +527,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     // Deleting single Image or Textfield - by ID found from loop through list of all objects
     public void Delete_Image_Textfield(int id, String text_or_image) {
         SQLiteDatabase db = this.getWritableDatabase();
-        if (text_or_image == "text"){
+        if (text_or_image == "text") {
             db.delete(TABLE_IMAGES, KEY_ID + " = ?", new String[]{String.valueOf(id)});
         } else if (text_or_image == "image") {
             db.delete(TABLE_TEXTS, KEY_ID + " = ?", new String[]{String.valueOf(id)});
@@ -487,9 +538,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     }
 
     /**
-     *
      * Get count of screens methods
-     *
      */
 
     // Getting Total number of Online Images
@@ -502,6 +551,9 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         // return count
         return cursor.getCount();
     }
+
+
+
 
 
     //Method for getting a count of all the pages for the app.
@@ -518,12 +570,12 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         return number_of_screens;
     }
 
-    public int Get_Navigation_Type(){
+    public int Get_Navigation_Type() {
         int nav_id = 0;
 
         try {
             //todo: add --> + " WHERE " + KEY_APP_NAME + "= "  --> after storing app name in shared prefs, etc
-            String appQuery = "SELECT "+ KEY_NAVIGATION_ID +" FROM " + TABLE_APP_DATA;
+            String appQuery = "SELECT " + KEY_NAVIGATION_ID + " FROM " + TABLE_APP_DATA;
             SQLiteDatabase db = getReadableDatabase();
             Cursor navIdCursor = db.rawQuery(appQuery, null);
 
@@ -561,7 +613,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
             SQLiteDatabase db = getReadableDatabase();
             String query = "SELECT * FROM " + TABLE_SCREENS + " WHERE " + KEY_UUID + " =?";
-            Cursor cursor  = db.rawQuery(query, new String[] {uuid} );
+            Cursor cursor = db.rawQuery(query, new String[]{uuid});
 
             Log.e("Screen offset cursor", DatabaseUtils.dumpCursorToString(cursor));
 
@@ -593,7 +645,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
             String textQuery = "SELECT * FROM " + TABLE_TEXTS + " WHERE " + KEY_SCREEN_UUID + " =?";
             //Cursor textCursor = db.rawQuery(textQuery, null);
-            Cursor textCursor = db.rawQuery(textQuery, new String[] {screen_uuid.toString()} );
+            Cursor textCursor = db.rawQuery(textQuery, new String[]{screen_uuid.toString()});
             Log.e("Text cursor", DatabaseUtils.dumpCursorToString(textCursor));
 
             if (textCursor.moveToFirst()) {
@@ -629,7 +681,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             // Get Image data
 
             String imageQuery = "SELECT * FROM " + TABLE_IMAGES + " WHERE " + KEY_SCREEN_UUID + " =?";
-            Cursor imageCursor = db.rawQuery(imageQuery, new String[] {screen_uuid.toString()} );
+            Cursor imageCursor = db.rawQuery(imageQuery, new String[]{screen_uuid.toString()});
             Log.e("Image cursor", DatabaseUtils.dumpCursorToString(imageCursor));
 
             if (imageCursor.moveToFirst()) {
@@ -659,6 +711,50 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             }
 
             imageCursor.close();
+
+
+            // Get Button data
+
+            String buttonQuery = "SELECT * FROM " + TABLE_BUTTONS + " WHERE " + KEY_SCREEN_ORDER + " =?";
+            Cursor buttonCursor = db.rawQuery(buttonQuery, new String[]{screen_uuid.toString()});
+            Log.e("Button cursor", DatabaseUtils.dumpCursorToString(buttonCursor));
+
+            if (buttonCursor.moveToFirst()) {
+                do {
+                    // fields:
+                    // id               (0)     int
+                    // uuid             (1)     String
+                    // screen_uuid      (2)     String
+                    // with_sub_screen  (3)     Boolean
+                    // sub_screen_uuid  (4)     String
+                    // label            (5)     String
+                    // purpose          (6)     String
+                    // content          (7)     String
+
+                    ButtonDataObject bdo = new ButtonDataObject();
+                    bdo.set_uuid(buttonCursor.getString(1));
+                    bdo.set_screen_uuid(buttonCursor.getString(2));
+                    boolean subscreen = buttonCursor.getInt(3) > 0;
+                    bdo.set_with_sub_screen(subscreen);
+                    bdo.set_sub_screen_uuid(buttonCursor.getString(4));
+                    bdo.set_label(buttonCursor.getString(5));
+                    bdo.set_purpose(buttonCursor.getString(6));
+                    bdo.set_content(buttonCursor.getString(7));
+
+                    Log.i("<====== BUTTON CURSOR ======>", DatabaseUtils.dumpCursorToString(buttonCursor));
+
+                    interfaceDataObjectList.add(bdo);
+
+                } while (buttonCursor.moveToNext());
+            }
+
+            buttonCursor.close();
+
+            // Get Button Subscreen data
+
+            // Is this a good idea to pull it out now? Or use another method? Trying alternate method first.
+
+
             db.close();
 
             // order top to bottom by vertical align before adding screen to ArrayList
@@ -684,7 +780,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
     }
 
-    public ArrayList<ConstraintDataObject> GetConstraintsByScreenUuid(String uuid){
+    public ArrayList<ConstraintDataObject> GetConstraintsByScreenUuid(String uuid) {
         constraints.clear();
 
         try {
@@ -724,13 +820,13 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         return constraints;
     }
 
-    public ArrayList<ConstraintDataObject> GetConstraintsByViewObjectUuid(String uuid){
+    public ArrayList<ConstraintDataObject> GetConstraintsByViewObjectUuid(String uuid) {
         constraints.clear();
 
         try {
             SQLiteDatabase db = getReadableDatabase();
             String query = "SELECT * FROM " + TABLE_CONSTRAINTS + " WHERE " + KEY_START_ID + " = ?";
-            Cursor cursor = db.rawQuery(query, new String[]{ uuid });
+            Cursor cursor = db.rawQuery(query, new String[]{uuid});
             Log.i("GetConstraintsByUUID cursor:", DatabaseUtils.dumpCursorToString(cursor));
             if (cursor.moveToFirst()) {
                 do {
