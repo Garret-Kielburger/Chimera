@@ -14,21 +14,19 @@ public class ButtonSubscreenDataObject implements IDataObject {
     public String _uuid;
     public String _screen_uuid;
     public String _owning_button_uuid;
-    public String _button_uuid;
-    public String _text_uuid;
-    public String _image_uuid;
+    public String _title;
+    public String _purpose;
 
     public ButtonSubscreenDataObject() {
     }
 
-    public ButtonSubscreenDataObject(int _id, String _uuid, String _screen_uuid, String _owning_button_uuid, String _button_uuid, String _text_uuid, String _image_uuid) {
+    public ButtonSubscreenDataObject(int _id, String _uuid, String _screen_uuid, String _owning_button_uuid, String _title, String _purpose) {
         this._id = _id;
         this._uuid = _uuid;
         this._screen_uuid = _screen_uuid;
         this._owning_button_uuid = _owning_button_uuid;
-        this._button_uuid = _button_uuid;
-        this._text_uuid = _text_uuid;
-        this._image_uuid = _image_uuid;
+        this._title = _title;
+        this._purpose = _purpose;
     }
 
     // getting ID
@@ -65,27 +63,19 @@ public class ButtonSubscreenDataObject implements IDataObject {
         this._owning_button_uuid = _owning_button_uuid;
     }
 
-    public String get_button_uuid() {
-        return _button_uuid;
+    public String get_title() {
+        return _title;
     }
 
-    public void set_button_uuid(String _button_uuid) {
-        this._button_uuid = _button_uuid;
+    public void set_title(String _title) {
+        this._title = _title;
     }
 
-    public String get_text_uuid() {
-        return _text_uuid;
+    public String get_purpose() {
+        return _purpose;
     }
 
-    public void set_text_uuid(String _text_uuid) {
-        this._text_uuid = _text_uuid;
-    }
-
-    public String get_image_uuid() {
-        return _image_uuid;
-    }
-
-    public void set_image_uuid(String _image_uuid) {
-        this._image_uuid = _image_uuid;
+    public void set_purpose(String _purpose) {
+        this._purpose = _purpose;
     }
 }

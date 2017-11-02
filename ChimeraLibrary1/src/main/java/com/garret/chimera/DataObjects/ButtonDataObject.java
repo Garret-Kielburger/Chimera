@@ -13,20 +13,22 @@ public class ButtonDataObject implements IDataObject {
     public int _id;
     public String _uuid;
     public String _screen_uuid;
+    public String _button_sub_screen_uuid;
     public boolean _with_sub_screen;
     public String _sub_screen_uuid;
     public String _label;
     public String _purpose;
-    public String _content; // When wilth_sub_screen = true, content wil be UUID for ButtonSubscreenDataObject?
+    public String _content; // When with_sub_screen = true, content wil be UUID for ButtonSubscreenDataObject?
 
 
     public ButtonDataObject() {
     }
 
-    public ButtonDataObject(int _id, String _uuid, String _screen_uuid, boolean _with_sub_screen, String _sub_screen_uuid, String _label, String _purpose, String _content) {
+    public ButtonDataObject(int _id, String _uuid, String _screen_uuid, String _button_sub_screen_uuid, boolean _with_sub_screen, String _sub_screen_uuid, String _label, String _purpose, String _content) {
         this._id = _id;
         this._uuid = _uuid;
         this._screen_uuid = _screen_uuid;
+        this._button_sub_screen_uuid = _button_sub_screen_uuid;
         this._with_sub_screen = _with_sub_screen;
         this._sub_screen_uuid = _sub_screen_uuid;
         this._label = _label;
@@ -58,6 +60,14 @@ public class ButtonDataObject implements IDataObject {
 
     public void set_screen_uuid(String _screen_uuid) {
         this._screen_uuid = _screen_uuid;
+    }
+
+    public String get_button_sub_screen_uuid() {
+        return _button_sub_screen_uuid;
+    }
+
+    public void set_button_sub_screen_uuid(String _button_sub_screen_uuid) {
+        this._button_sub_screen_uuid = _button_sub_screen_uuid;
     }
 
     public boolean get_with_sub_screen() {

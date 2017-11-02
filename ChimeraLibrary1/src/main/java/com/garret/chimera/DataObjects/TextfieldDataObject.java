@@ -12,6 +12,7 @@ public class TextfieldDataObject implements IDataObject {
     public int _id;
     public String _uuid;
     public String _screen_uuid;
+    public String _button_sub_screen_uuid;
     public String _purpose;
     public String _content;
     public Integer _horizontal_align;
@@ -24,7 +25,7 @@ public class TextfieldDataObject implements IDataObject {
     }
 
     //constructor
-    public TextfieldDataObject(int id, String uuid, String screen_uuid, String purpose, String content, Integer horizontal_align, Integer vertical_align){
+    public TextfieldDataObject(int id, String uuid, String screen_uuid, String button_sub_screen_uuid, String purpose, String content, Integer horizontal_align, Integer vertical_align){
         this._id = id;
         this._uuid = uuid;
         this._screen_uuid = screen_uuid;
@@ -61,6 +62,14 @@ public class TextfieldDataObject implements IDataObject {
     // setting screen uuid
     public void setScreenUuid(String screen_uuid) {
         this._screen_uuid = screen_uuid;
+    }
+
+    public String getButtonSubscreenUuid() {
+        return _button_sub_screen_uuid;
+    }
+
+    public void setButtonSubscreenUuid(String _button_sub_screen_uuid) {
+        this._button_sub_screen_uuid = _button_sub_screen_uuid;
     }
 
     // getting Purpose

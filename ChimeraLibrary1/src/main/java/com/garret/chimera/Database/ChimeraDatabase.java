@@ -37,7 +37,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
     //TODO: Create contstructor for new Tables (as pages/screens) - ie using data from push
 
-    private static String DB_NAME = "Chimera1.db";
+    private static String DB_NAME = "Chimera.db";
     private static final int DB_VERSION = 1;
 
     // Tables
@@ -47,7 +47,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     public static final String TABLE_TEXTS = "texts";
     public static final String TABLE_IMAGES = "images";
     public static final String TABLE_BUTTONS = "buttons";
-    public static final String TABLE_BUTTONS_SUBSCREENS = "buttons_subscreens";
+    public static final String TABLE_BUTTONS_SUBSCREENS = "buttons_sub_screens";
     public static final String TABLE_CONSTRAINTS = "constraints";
 
     // Manticore-Chimera Screens Table Columns names
@@ -76,15 +76,14 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     public static final String KEY_URI = "uri";
 
     // buttons Column names
+    public static final String KEY_BUTTON_SUB_SCREEN_UUID = "button_sub_screen_uuid";
     public static final String KEY_WITH_SUB_SCREEN = "with_sub_screen";
     public static final String KEY_SUB_SCREEN_UUID = "sub_screen_uuid";
     public static final String KEY_LABEL = "label";
 
     // buttons_subscreens Column names
     public static final String KEY_OWNING_BUTTON_UUID = "owning_button_uuid";
-    public static final String KEY_BUTTON_UUID = "button_uuid";
-    public static final String KEY_TEXT_UUID = "text_uuid";
-    public static final String KEY_IMAGE_UUID = "image_uuid";
+    public static final String KEY_TITLE = "title";
 
     // constraint Column names
     public static final String KEY_START_ID = "start_id";
@@ -160,6 +159,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         ContentValues values = new ContentValues();
         values.put(KEY_UUID, tdo.getUuid());
         values.put(KEY_SCREEN_UUID, tdo.getScreenUuid());
+        values.put(KEY_BUTTON_SUB_SCREEN_UUID, tdo.getButtonSubscreenUuid());
         values.put(KEY_PURPOSE, tdo.getPurpose());
         //values.put(KEY_VERTICAL_ALIGN, tdo.getVerticalAlign());
         //values.put(KEY_HORIZONTAL_ALIGN, tdo.getHorizontalAlign());
@@ -177,6 +177,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         ContentValues values = new ContentValues();
         values.put(KEY_UUID, ido.getUuid());
         values.put(KEY_SCREEN_UUID, ido.getScreenUuid());
+        values.put(KEY_BUTTON_SUB_SCREEN_UUID, ido.getButtonSubscreenUuid());
         values.put(KEY_PURPOSE, ido.getPurpose());
         //values.put(KEY_VERTICAL_ALIGN, ido.getVerticalAlign());
         // values.put(KEY_HORIZONTAL_ALIGN, ido.getHorizontalAlign());
@@ -194,6 +195,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         ContentValues values = new ContentValues();
         values.put(KEY_UUID, bdo.get_uuid());
         values.put(KEY_SCREEN_UUID, bdo.get_screen_uuid());
+        values.put(KEY_BUTTON_SUB_SCREEN_UUID, bdo.get_button_sub_screen_uuid());
         values.put(KEY_WITH_SUB_SCREEN, bdo.get_with_sub_screen());
         values.put(KEY_SUB_SCREEN_UUID, bdo.get_sub_screen_uuid());
         values.put(KEY_LABEL, bdo.get_label());
@@ -213,9 +215,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         values.put(KEY_UUID, bsdo.get_uuid());
         values.put(KEY_SCREEN_UUID, bsdo.get_screen_uuid());
         values.put(KEY_OWNING_BUTTON_UUID, bsdo.get_owning_button_uuid());
-        values.put(KEY_BUTTON_UUID, bsdo.get_button_uuid());
-        values.put(KEY_TEXT_UUID, bsdo.get_text_uuid());
-        values.put(KEY_IMAGE_UUID, bsdo.get_image_uuid());
+        values.put(KEY_TITLE, bsdo.get_title());
+        values.put(KEY_PURPOSE, bsdo.get_purpose());
 
         db.insert(TABLE_BUTTONS_SUBSCREENS, null, values);
         db.close();
@@ -476,8 +477,6 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         return imageList;
     }
 
-
-
     public ArrayList<ScreenDataObject> Get_All_Screens_Metadata() {
 
         try {
@@ -551,10 +550,6 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         // return count
         return cursor.getCount();
     }
-
-
-
-
 
     //Method for getting a count of all the pages for the app.
     public int Get_Number_Of_Screens() {
@@ -653,20 +648,22 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
                     // fields: id       (0)     int
                     // uuid             (1)     String
                     // screen_uuid      (2)     String
-                    // purpose          (3)     String
-                    // vertical align   (4)     int
-                    // horizontal align (5)     int
-                    // content          (6)     String]
+                    // button_sub_screen_uuid (3) String
+                    // purpose          (4)     String
+                    // vertical align   (5)     int
+                    // horizontal align (6)     int
+                    // content          (7)     String]
                     TextfieldDataObject tdo = new TextfieldDataObject();
                     tdo.setUuid(textCursor.getString(1));
                     tdo.setScreenUuid(screen_uuid);  //---> Screen UUID needed in each element?
-                    tdo.setPurpose(textCursor.getString(3));
+                    tdo.setButtonSubscreenUuid(textCursor.getString(3));
+                    tdo.setPurpose(textCursor.getString(4));
                     //tdo.setVerticalAlign(textCursor.getInt(4));
                     //todo: remove old debug Logs
                     //Log.i("Textfield getVerticalAlign()", tdo.getVerticalAlign().toString());
 
                     //tdo.setHorizontalAlign(textCursor.getInt(5));
-                    tdo.setContent(textCursor.getString(6));
+                    tdo.setContent(textCursor.getString(7));
 
                     Log.i("<====== TEXT CURSOR ======> ", DatabaseUtils.dumpCursorToString(textCursor));
 
@@ -689,19 +686,21 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
                     // fields: id       (0)     int
                     // uuid             (1)     String
                     // screen_uuid      (2)     String
-                    // purpose          (3)     String
-                    // vertical align   (4)     int
-                    // horizontal align (5)     int
-                    // content          (6)     String
+                    // button_sub_screen_uuid (3) String
+                    // purpose          (4)     String
+                    // vertical align   (5)     int
+                    // horizontal align (6)     int
+                    // content          (7)     String
                     ImageDataObject ido = new ImageDataObject();
                     ido.setUuid(imageCursor.getString(1));
                     ido.setScreenUuid(imageCursor.getString(2));
-                    ido.setPurpose(imageCursor.getString(3));
+                    ido.setButtonSubscreenUuid(imageCursor.getString(3));
+                    ido.setPurpose(imageCursor.getString(4));
                     //ido.setVerticalAlign(imageCursor.getInt(4));
                     //todo: remove old debug Logs
                     //Log.i("Image getVerticalAlign()", ido.getVerticalAlign().toString());
                     //ido.setHorizontalAlign(imageCursor.getInt(5));
-                    ido.setUri(imageCursor.getString(6));
+                    ido.setUri(imageCursor.getString(7));
 
                     Log.i("<====== IMAGE CURSOR ======>", DatabaseUtils.dumpCursorToString(imageCursor));
 
@@ -725,21 +724,23 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
                     // id               (0)     int
                     // uuid             (1)     String
                     // screen_uuid      (2)     String
-                    // with_sub_screen  (3)     Boolean
-                    // sub_screen_uuid  (4)     String
-                    // label            (5)     String
-                    // purpose          (6)     String
-                    // content          (7)     String
+                    // button_sub_screen_uuid (3) String
+                    // with_sub_screen  (4)     Boolean
+                    // sub_screen_uuid  (5)     String
+                    // label            (6)     String
+                    // purpose          (7)     String
+                    // content          (8)     String
 
                     ButtonDataObject bdo = new ButtonDataObject();
                     bdo.set_uuid(buttonCursor.getString(1));
                     bdo.set_screen_uuid(buttonCursor.getString(2));
-                    boolean subscreen = buttonCursor.getInt(3) > 0;
+                    bdo.set_button_sub_screen_uuid(buttonCursor.getString(3));
+                    boolean subscreen = buttonCursor.getInt(4) > 0;
                     bdo.set_with_sub_screen(subscreen);
-                    bdo.set_sub_screen_uuid(buttonCursor.getString(4));
-                    bdo.set_label(buttonCursor.getString(5));
-                    bdo.set_purpose(buttonCursor.getString(6));
-                    bdo.set_content(buttonCursor.getString(7));
+                    bdo.set_sub_screen_uuid(buttonCursor.getString(5));
+                    bdo.set_label(buttonCursor.getString(6));
+                    bdo.set_purpose(buttonCursor.getString(7));
+                    bdo.set_content(buttonCursor.getString(8));
 
                     Log.i("<====== BUTTON CURSOR ======>", DatabaseUtils.dumpCursorToString(buttonCursor));
 
@@ -819,6 +820,46 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
         return constraints;
     }
+
+    public ButtonSubscreenDataObject GetButtonSubscreenByUuid(String given_owning_button_uuid) {
+
+        ButtonSubscreenDataObject bsdo = new ButtonSubscreenDataObject();
+
+        try {
+            SQLiteDatabase db = getReadableDatabase();
+            String button_sub_screen_query = "SELECT * FROM " + TABLE_BUTTONS_SUBSCREENS + "WHERE " + KEY_OWNING_BUTTON_UUID + " =?";
+            Cursor button_sub_screen_cursor = db.rawQuery(button_sub_screen_query, new String[]{given_owning_button_uuid});
+
+            Log.e("Button Subscreen Cursor:", DatabaseUtils.dumpCursorToString(button_sub_screen_cursor));
+
+            if (button_sub_screen_cursor.moveToFirst()) {
+                do {
+                    // fields:
+                    // id               (0)     int
+                    // uuid             (1)     String
+                    // screen_uuid      (2)     String
+                    // owning_button_uuid (3)   String
+                    // title            (4)     String
+                    // purpose          (5)     String
+
+                    bsdo.set_uuid(button_sub_screen_cursor.getString(1));
+                    bsdo.set_screen_uuid(button_sub_screen_cursor.getString(2));
+                    bsdo.set_owning_button_uuid(button_sub_screen_cursor.getString(3));
+                    bsdo.set_title(button_sub_screen_cursor.getString(4));
+                    bsdo.set_purpose(button_sub_screen_cursor.getString(5));
+
+                } while (button_sub_screen_cursor.moveToNext());
+            }
+
+            button_sub_screen_cursor.close();
+            db.close();
+        } catch (Exception e) {
+            Log.e("GetButtonSubscreenByUuid", "Exception: " + e);
+        }
+
+        return bsdo;
+    }
+
 
     public ArrayList<ConstraintDataObject> GetConstraintsByViewObjectUuid(String uuid) {
         constraints.clear();

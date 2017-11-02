@@ -10,6 +10,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.garret.chimera.Constants;
+import com.garret.chimera.DataObjects.ButtonDataObject;
+import com.garret.chimera.DataObjects.ButtonSubscreenDataObject;
 import com.garret.chimera.DataObjects.ConstraintDataObject;
 import com.garret.chimera.Database.ChimeraDatabase;
 import com.garret.chimera.DataObjects.AppDataDataObject;
@@ -54,6 +56,8 @@ import static com.garret.chimera.Constants.JSON_NODE_APP_DATA;
 import static com.garret.chimera.Constants.JSON_NODE_SCREENS;
 import static com.garret.chimera.Constants.JSON_NODE_TEXTS;
 import static com.garret.chimera.Constants.JSON_NODE_IMAGES;
+import static com.garret.chimera.Constants.JSON_NODE_BUTTONS;
+import static com.garret.chimera.Constants.JSON_NODE_BUTTONS_SUB_SCREENS;
 import static com.garret.chimera.Constants.JSON_NODE_CONSTRAINTS;
 import static com.garret.chimera.Constants.random;
 
@@ -363,6 +367,7 @@ public class ApiUtilities {
                                                 TextfieldDataObject tdo = new TextfieldDataObject();
                                                 tdo.setUuid(text_obj.getString("uuid"));
                                                 tdo.setScreenUuid(text_obj.getString("screen_uuid"));
+                                                tdo.setButtonSubscreenUuid(text_obj.getString("button_sub_screen_uuid"));
                                                 //todo: null checks
                                                 tdo.setPurpose(text_obj.getString("purpose"));
                                                 String va = text_obj.getString("vertical_align");
@@ -389,6 +394,7 @@ public class ApiUtilities {
                                                 // todo: null checks
                                                 ido.setUuid(image_obj.getString("uuid"));
                                                 ido.setScreenUuid(image_obj.getString("screen_uuid"));
+                                                ido.setButtonSubscreenUuid(image_obj.getString("button_sub_screen_uuid"));
                                                 ido.setPurpose(image_obj.getString("purpose"));
                                                 //ido.setVerticalAlign(Integer.parseInt(image_obj.getString("vertical_align")));
                                                 //ido.setHorizontalAlign(Integer.parseInt(image_obj.getString("horizontal_align")));
@@ -399,11 +405,51 @@ public class ApiUtilities {
                                         }
                                     }
 
+                                    JSONArray buttons_array = screens_obj.getJSONArray(JSON_NODE_BUTTONS);
+                                    if (buttons_array != null){
+                                        Log.i("Button JSON array: ", buttons_array.toString());
+                                        for (int l = 0; l < buttons_array.length(); l++) {
+                                            JSONObject button_obj = buttons_array.getJSONObject(l);
+                                            if (button_obj != null) {
+                                                ButtonDataObject bdo = new ButtonDataObject();
+                                                //todo: null checks
+                                                bdo.set_uuid(button_obj.getString("uuid"));
+                                                bdo.set_screen_uuid(button_obj.getString("screen_uuid"));
+                                                bdo.set_button_sub_screen_uuid(button_obj.getString("button_sub_screen_uuid"));
+                                                bdo.set_with_sub_screen(button_obj.getBoolean("with_sub_screen"));
+                                                bdo.set_sub_screen_uuid(button_obj.getString("sub_screen_uuid"));
+                                                bdo.set_label(button_obj.getString("label"));
+                                                bdo.set_purpose(button_obj.getString("purpose"));
+                                                bdo.set_content(button_obj.getString("content"));
+                                                db.SaveButtonData(bdo);
+                                            }
+                                        }
+                                    }
+
+                                    JSONArray buttons_sub_screen_array = screens_obj.getJSONArray(JSON_NODE_BUTTONS_SUB_SCREENS);
+                                    if (buttons_sub_screen_array != null){
+                                        Log.i("Button JSON array: ", buttons_sub_screen_array.toString());
+                                        for (int l = 0; l < buttons_sub_screen_array.length(); l++) {
+                                            JSONObject sub_screen_obj = buttons_sub_screen_array.getJSONObject(l);
+                                            if (sub_screen_obj != null) {
+                                                ButtonSubscreenDataObject bsdo = new ButtonSubscreenDataObject();
+                                                //todo: null checks
+                                                bsdo.set_uuid(sub_screen_obj.getString("uuid"));
+                                                bsdo.set_screen_uuid(sub_screen_obj.getString("screen_uuid"));
+                                                bsdo.set_owning_button_uuid(sub_screen_obj.getString("owning_button_uuid"));
+                                                bsdo.set_title(sub_screen_obj.getString("title"));
+                                                bsdo.set_purpose(sub_screen_obj.getString("purpose"));
+
+                                                db.SaveButtonSubscreenData(bsdo);
+                                            }
+                                        }
+                                    }
+
                                     Log.d("Constraints JSON", "just started");
 
                                     JSONArray constraints_array = screens_obj.getJSONArray(JSON_NODE_CONSTRAINTS);
                                     if (constraints_array != null) {
-                                        Log.i("Constraint JSON ARRAY ==>  ", constraints_array.toString());
+                                        Log.i("Constrait JSON ARRAY>  ", constraints_array.toString());
                                         for (int j = 0; j < constraints_array.length() ; j++) {
                                             JSONObject constraint_obj = constraints_array.getJSONObject(j);
                                             if (constraint_obj != null) {
