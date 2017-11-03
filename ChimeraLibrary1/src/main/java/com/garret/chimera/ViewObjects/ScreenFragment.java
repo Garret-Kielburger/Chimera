@@ -12,9 +12,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.garret.chimera.DataObjects.ButtonDataObject;
 import com.garret.chimera.DataObjects.ConstraintDataObject;
 import com.garret.chimera.DataObjects.IDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
@@ -44,7 +46,7 @@ public class ScreenFragment extends Fragment {
     String uuid;
     String screen_name;
     Context context;
-    String textOrImage;
+    String textOrImageOrButton;
     ArrayList<IDataObject> interfaceDataObjectListFromDb;
     Map<String, View> viewObjectMap = new HashMap<>();
     ArrayList<ConstraintDataObject> constraints;
@@ -52,6 +54,7 @@ public class ScreenFragment extends Fragment {
     ChimeraDatabase db;
     Image img;
     TextView textView;
+    Button button;
 
     public ScreenFragment() {
     }
@@ -98,7 +101,7 @@ public class ScreenFragment extends Fragment {
 
             if (interfaceDataObjectListFromDb.get(i).getClass() == TextfieldDataObject.class) {
                 TextfieldDataObject tdo = (TextfieldDataObject) interfaceDataObjectListFromDb.get(i);
-                textOrImage = "text";
+                textOrImageOrButton = "text";
                 textView = new TextView(context);
                 textView.setId(View.generateViewId());
                 textView.setText(tdo.getContent());
@@ -109,7 +112,7 @@ public class ScreenFragment extends Fragment {
 
             } else if (interfaceDataObjectListFromDb.get(i).getClass() == ImageDataObject.class) {
                 ImageDataObject ido = (ImageDataObject) interfaceDataObjectListFromDb.get(i);
-                textOrImage = "image";
+                textOrImageOrButton = "image";
                 //LinearLayout.LayoutParams params = SetHorizontalParameters(i, null, ido);
                 img = new Image(context, ido.getUri());
                 img.setId(View.generateViewId());
@@ -117,11 +120,22 @@ public class ScreenFragment extends Fragment {
                 //img.imageHolder.setGravity(params.gravity);
                 constraintLayout.addView(img);
 
-            } else {
+            } else if (interfaceDataObjectListFromDb.get(i).getClass() == ButtonDataObject.class){
+                ButtonDataObject bdo = (ButtonDataObject) interfaceDataObjectListFromDb.get(i);
+                textOrImageOrButton = "button";
+                button = new Button(context);
+                button.setText(bdo.get_label());
+                button.setId(View.generateViewId());
+
+                viewObjectMap.put(bdo.get_uuid(), button);
+                constraintLayout.addView(button);
+
+            }
+            else {
                 // Not a text and not an image - what do?
-                Log.i("Making ViewObj Map", "Not an image or a text!");
+                Log.i("Making ViewObj Map", "Not an image or a text or a button!");
                 Log.d("interfaceObj:", interfaceDataObjectListFromDb.get(i).toString());
-                textOrImage = "whoops";
+                textOrImageOrButton = "whoops";
             }
 
         }
@@ -220,13 +234,16 @@ public class ScreenFragment extends Fragment {
     public LinearLayout.LayoutParams SetHorizontalParameters(int i, TextfieldDataObject tdo, ImageDataObject ido) {
         LinearLayout.LayoutParams params;
         //image
-        if (textOrImage.equalsIgnoreCase("image")) {
+        if (textOrImageOrButton.equalsIgnoreCase("image")) {
             params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
         }
         //text
-        else if (textOrImage.equalsIgnoreCase("text")) {
+        else if (textOrImageOrButton.equalsIgnoreCase("text")) {
             params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        } else {
+        } else if (textOrImageOrButton.equalsIgnoreCase("button")){
+            params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        }
+        else {
             Log.e(TAG, "This should never happen!");
             params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
         }
