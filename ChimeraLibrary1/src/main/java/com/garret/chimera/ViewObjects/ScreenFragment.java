@@ -2,11 +2,9 @@ package com.garret.chimera.ViewObjects;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v4.app.Fragment;
-import android.text.Layout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -16,6 +14,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.garret.chimera.ButtonClicks.ButtonOnClicks;
 import com.garret.chimera.DataObjects.ButtonDataObject;
 import com.garret.chimera.DataObjects.ConstraintDataObject;
 import com.garret.chimera.DataObjects.IDataObject;
@@ -28,9 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static android.R.attr.key;
 import static android.content.ContentValues.TAG;
-import static com.garret.chimera.R.id.textView;
 
 /**
  * Created by Captain on 22/05/2017.
@@ -41,7 +38,6 @@ import static com.garret.chimera.R.id.textView;
 
 public class ScreenFragment extends Fragment {
 
-    LinearLayout layout;
     ConstraintLayout constraintLayout;
     String uuid;
     String screen_name;
@@ -49,7 +45,6 @@ public class ScreenFragment extends Fragment {
     String textOrImageOrButton;
     ArrayList<IDataObject> interfaceDataObjectListFromDb;
     Map<String, View> viewObjectMap = new HashMap<>();
-    ArrayList<ConstraintDataObject> constraints;
 
     ChimeraDatabase db;
     Image img;
@@ -124,8 +119,10 @@ public class ScreenFragment extends Fragment {
                 ButtonDataObject bdo = (ButtonDataObject) interfaceDataObjectListFromDb.get(i);
                 textOrImageOrButton = "button";
                 button = new Button(context);
-                button.setText(bdo.get_label());
                 button.setId(View.generateViewId());
+                button.setText(bdo.get_label());
+
+                button.setOnClickListener(ButtonOnClicks.getOnClickListener(bdo));
 
                 viewObjectMap.put(bdo.get_uuid(), button);
                 constraintLayout.addView(button);
@@ -154,11 +151,10 @@ public class ScreenFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-
     }
 
 
-    public void GetConstraintsParameters(ConstraintLayout layout) {
+    private void GetConstraintsParameters(ConstraintLayout layout) {
         Log.i("GetConstraintParameters", "Started");
         ConstraintSet set = new ConstraintSet();
 
@@ -169,7 +165,6 @@ public class ScreenFragment extends Fragment {
         int endSide = 0;
 
         set.clone(layout);
-
 /*
 * Idea - go through the view objects and apply constraints
 * */

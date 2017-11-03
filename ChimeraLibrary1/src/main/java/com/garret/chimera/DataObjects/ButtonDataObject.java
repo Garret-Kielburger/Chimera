@@ -12,10 +12,10 @@ public class ButtonDataObject implements IDataObject {
     // private variables
     public int _id;
     public String _uuid;
-    public String _screen_uuid;
-    public String _button_sub_screen_uuid;
+    public String _screen_uuid;            // belongs to a screen
+    public String _button_sub_screen_uuid; // belongs to a button click
     public boolean _with_sub_screen;
-    public String _sub_screen_uuid;
+    public String _sub_screen_uuid;        // subscreen clicking this button goes to
     public String _label;
     public String _purpose;
     public String _content; // When with_sub_screen = true, content wil be UUID for ButtonSubscreenDataObject?

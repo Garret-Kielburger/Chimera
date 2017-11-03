@@ -13,7 +13,6 @@ import com.garret.chimera.DataObjects.TextfieldDataObject;
 import com.garret.chimera.Database.ChimeraDatabase;
 import com.garret.chimera.R;
 
-
 import java.util.ArrayList;
 
 /**

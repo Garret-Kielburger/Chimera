@@ -96,6 +96,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     private ArrayList<TextfieldDataObject> textfieldList = new ArrayList<TextfieldDataObject>();
     private ArrayList<ScreenDataObject> screenList = new ArrayList<ScreenDataObject>();
     private ArrayList<IDataObject> interfaceDataObjectList = new ArrayList<IDataObject>();
+    private ArrayList<IDataObject> subscreenInterfaceDataObjectList = new ArrayList<IDataObject>();
     private ScreenDataObject current_screen = new ScreenDataObject();
     private ArrayList<ConstraintDataObject> constraints = new ArrayList<ConstraintDataObject>();
 
@@ -103,6 +104,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     private ArrayList<String> titles = new ArrayList<String>();
 
     public String screen_uuid;
+    public String sub_screen_uuid;
 
     public ChimeraDatabase(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -714,7 +716,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
             // Get Button data
 
-            String buttonQuery = "SELECT * FROM " + TABLE_BUTTONS + " WHERE " + KEY_SCREEN_ORDER + " =?";
+            String buttonQuery = "SELECT * FROM " + TABLE_BUTTONS + " WHERE " + KEY_SCREEN_UUID + " =?";
             Cursor buttonCursor = db.rawQuery(buttonQuery, new String[]{screen_uuid.toString()});
             Log.e("Button cursor", DatabaseUtils.dumpCursorToString(buttonCursor));
 
@@ -778,6 +780,189 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             Log.e("getScreenDataByUuid():", "exception: " + e);
         }
         return interfaceDataObjectList;
+
+    }
+
+    public ArrayList<IDataObject> getSubScreenDataByUuid(String uuid) {
+        subscreenInterfaceDataObjectList.clear();
+
+        // GET sub_screen by sub_screen_count integer.
+
+        try {
+
+            SQLiteDatabase db = getReadableDatabase();
+
+
+//            String query = "SELECT * FROM " + TABLE_BUTTONS_SUBSCREENS + " WHERE " + KEY_OWNING_BUTTON_UUID + " =?";
+//            Cursor cursor = db.rawQuery(query, new String[]{uuid});
+//
+//            Log.e("Subscreen Cursor: ", DatabaseUtils.dumpCursorToString(cursor));
+//
+//            if (cursor.moveToFirst()) {
+//                do {
+//                    // fields:
+//                    // id                 (0)   int
+//                    // uuid               (1)   String
+//                    // screen_uuid        (2)   String
+//                    // owning_button_uuid (3)   String
+//                    // title              (4)   String
+//                    // purpose            (5)   String
+//
+//                    ButtonSubscreenDataObject bsdo = new ButtonSubscreenDataObject();
+//                    sub_screen_uuid = cursor.getString(1);
+//                    bsdo.set_uuid(sub_screen_uuid);
+//                    bsdo.set_screen_uuid(cursor.getString(2));
+//                    bsdo.set_owning_button_uuid(uuid);
+//                    bsdo.set_title(cursor.getString(4));
+//                    bsdo.set_purpose(cursor.getString(5));
+//
+//                    // note: screen will always be the first element of the returned array (need it for name, etc)
+//                    //subscreenInterfaceDataObjectList.add(sdo);
+//
+//                } while (cursor.moveToNext());
+//            }
+//
+//            cursor.close();
+
+            // Get Text data
+
+            String textQuery = "SELECT * FROM " + TABLE_TEXTS + " WHERE " + KEY_BUTTON_SUB_SCREEN_UUID + " =?";
+            //Cursor textCursor = db.rawQuery(textQuery, null);
+            Cursor textCursor = db.rawQuery(textQuery, new String[]{sub_screen_uuid.toString()});
+            Log.e("Subscreen Text cursor", DatabaseUtils.dumpCursorToString(textCursor));
+
+            if (textCursor.moveToFirst()) {
+                do {
+                    // fields: id       (0)     int
+                    // uuid             (1)     String
+                    // screen_uuid      (2)     String
+                    // button_sub_screen_uuid (3) String
+                    // purpose          (4)     String
+                    // vertical align   (5)     int
+                    // horizontal align (6)     int
+                    // content          (7)     String]
+                    TextfieldDataObject tdo = new TextfieldDataObject();
+                    tdo.setUuid(textCursor.getString(1));
+                    tdo.setScreenUuid(textCursor.getString(2));  //---> Screen UUID needed in each element?
+                    tdo.setButtonSubscreenUuid(textCursor.getString(3));
+                    tdo.setPurpose(textCursor.getString(4));
+                    //tdo.setVerticalAlign(textCursor.getInt(4));
+                    //todo: remove old debug Logs
+                    //Log.i("Textfield getVerticalAlign()", tdo.getVerticalAlign().toString());
+                    //tdo.setHorizontalAlign(textCursor.getInt(5));
+                    tdo.setContent(textCursor.getString(7));
+
+                    Log.i("<====== SUBSCREEN TEXT CURSOR ======> ", DatabaseUtils.dumpCursorToString(textCursor));
+
+
+                    subscreenInterfaceDataObjectList.add(tdo);
+
+                } while (textCursor.moveToNext());
+            }
+
+            textCursor.close();
+
+            // Get Image data
+
+            String imageQuery = "SELECT * FROM " + TABLE_IMAGES + " WHERE " + KEY_BUTTON_SUB_SCREEN_UUID + " =?";
+            Cursor imageCursor = db.rawQuery(imageQuery, new String[]{sub_screen_uuid.toString()});
+            Log.e("Subscreen Image cursor", DatabaseUtils.dumpCursorToString(imageCursor));
+
+            if (imageCursor.moveToFirst()) {
+                do {
+                    // fields: id       (0)     int
+                    // uuid             (1)     String
+                    // screen_uuid      (2)     String
+                    // button_sub_screen_uuid (3) String
+                    // purpose          (4)     String
+                    // vertical align   (5)     int
+                    // horizontal align (6)     int
+                    // content          (7)     String
+                    ImageDataObject ido = new ImageDataObject();
+                    ido.setUuid(imageCursor.getString(1));
+                    ido.setScreenUuid(imageCursor.getString(2));
+                    ido.setButtonSubscreenUuid(imageCursor.getString(3));
+                    ido.setPurpose(imageCursor.getString(4));
+                    //ido.setVerticalAlign(imageCursor.getInt(4));
+                    //todo: remove old debug Logs
+                    //Log.i("Image getVerticalAlign()", ido.getVerticalAlign().toString());
+                    //ido.setHorizontalAlign(imageCursor.getInt(5));
+                    ido.setUri(imageCursor.getString(7));
+
+                    Log.i("<====== SUBSCREEN IMAGE CURSOR ======>", DatabaseUtils.dumpCursorToString(imageCursor));
+
+                    subscreenInterfaceDataObjectList.add(ido);
+
+                } while (imageCursor.moveToNext());
+            }
+
+            imageCursor.close();
+
+
+            // Get Button data
+
+            String buttonQuery = "SELECT * FROM " + TABLE_BUTTONS + " WHERE " + KEY_BUTTON_SUB_SCREEN_UUID + " =?";
+            Cursor buttonCursor = db.rawQuery(buttonQuery, new String[]{sub_screen_uuid.toString()});
+            Log.e("Subscreen Button cursor", DatabaseUtils.dumpCursorToString(buttonCursor));
+
+            if (buttonCursor.moveToFirst()) {
+                do {
+                    // fields:
+                    // id               (0)     int
+                    // uuid             (1)     String
+                    // screen_uuid      (2)     String
+                    // button_sub_screen_uuid (3) String
+                    // with_sub_screen  (4)     Boolean
+                    // sub_screen_uuid  (5)     String
+                    // label            (6)     String
+                    // purpose          (7)     String
+                    // content          (8)     String
+
+                    ButtonDataObject bdo = new ButtonDataObject();
+                    bdo.set_uuid(buttonCursor.getString(1));
+                    bdo.set_screen_uuid(buttonCursor.getString(2));
+                    bdo.set_button_sub_screen_uuid(buttonCursor.getString(3));
+                    boolean subscreen = buttonCursor.getInt(4) > 0;
+                    bdo.set_with_sub_screen(subscreen);
+                    bdo.set_sub_screen_uuid(buttonCursor.getString(5));
+                    bdo.set_label(buttonCursor.getString(6));
+                    bdo.set_purpose(buttonCursor.getString(7));
+                    bdo.set_content(buttonCursor.getString(8));
+
+                    Log.i("<====== BUTTON CURSOR ======>", DatabaseUtils.dumpCursorToString(buttonCursor));
+
+                    subscreenInterfaceDataObjectList.add(bdo);
+
+                } while (buttonCursor.moveToNext());
+            }
+
+            buttonCursor.close();
+
+            // Get Button Subscreen data
+
+            // Is this a good idea to pull it out now? Or use another method? Trying alternate method first.
+
+
+            db.close();
+
+            // order top to bottom by vertical align before adding screen to ArrayList
+/*
+            Collections.sort(interfaceDataObjectList, new Comparator<IDataObject>(){
+                @Override
+                public int compare(IDataObject lhs, IDataObject rhs) {
+                    return Integer.valueOf(lhs.getVerticalAlign().compareTo(rhs.getVerticalAlign()));
+                }
+            });
+*/
+
+            //db.close();
+            return subscreenInterfaceDataObjectList;
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            Log.e("getSubscreenDataByUuid():", "exception: " + e);
+        }
+        return subscreenInterfaceDataObjectList;
 
     }
 

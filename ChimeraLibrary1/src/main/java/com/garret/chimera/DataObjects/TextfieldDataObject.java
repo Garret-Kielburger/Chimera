@@ -11,8 +11,8 @@ public class TextfieldDataObject implements IDataObject {
     // private variables
     public int _id;
     public String _uuid;
-    public String _screen_uuid;
-    public String _button_sub_screen_uuid;
+    public String _screen_uuid;             // belongs to a screen
+    public String _button_sub_screen_uuid;  // belongs to a button click
     public String _purpose;
     public String _content;
     public Integer _horizontal_align;

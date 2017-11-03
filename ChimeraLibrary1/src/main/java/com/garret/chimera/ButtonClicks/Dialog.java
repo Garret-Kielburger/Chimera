@@ -1,19 +1,30 @@
 package com.garret.chimera.ButtonClicks;
 
 import android.app.DialogFragment;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
+import android.content.Context;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
+import com.garret.chimera.DataObjects.ButtonDataObject;
+import com.garret.chimera.DataObjects.ButtonSubscreenDataObject;
+import com.garret.chimera.DataObjects.ConstraintDataObject;
+import com.garret.chimera.DataObjects.IDataObject;
+import com.garret.chimera.DataObjects.ImageDataObject;
+import com.garret.chimera.DataObjects.TextfieldDataObject;
+import com.garret.chimera.Database.ChimeraDatabase;
 import com.garret.chimera.R;
+import com.garret.chimera.ViewObjects.Image;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Captain on 02/11/2017.
@@ -22,15 +33,24 @@ import java.util.List;
  * Copyright Greenr Republic Software Company - All Rights Reserved.
  */
 
+
 public class Dialog extends DialogFragment {
 
-    static public Dialog newInstance() {
+    String button_data_object_uuid;
+    ButtonSubscreenDataObject bsdo;
+    ChimeraDatabase db;
+
+    ArrayList<IDataObject> subscreenInterfaceDataObjectListFromDb;
+    Map<String, View> viewObjectMap = new HashMap<>();
+    ConstraintLayout constraintLayout;
+    Context context;
+
+    static public Dialog newInstance(String button_data_object_uuid) {
         Dialog dialog = new Dialog();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putString("email", email);
-        args.putString("number", number);
+        args.putString("button_data_object_uuid", button_data_object_uuid);
         dialog.setArguments(args);
 
         return dialog;
@@ -39,63 +59,132 @@ public class Dialog extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        email = getArguments().getString("email");
-        number = getArguments().getString("number");
+        db = new ChimeraDatabase(getActivity());
+        button_data_object_uuid = getArguments().getString("button_data_object_uuid");
+        bsdo = db.GetButtonSubscreenByUuid(button_data_object_uuid);
+
+        subscreenInterfaceDataObjectListFromDb = db.getSubScreenDataByUuid(bsdo.get_uuid());
+
         setStyle(DialogFragment.STYLE_NORMAL, R.style.Dialog);
+
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().setTitle("Contact Gardener");
+        getDialog().setTitle(bsdo.get_title());
+
         View v = inflater.inflate(R.layout.contact_dialog, container, false);
+        constraintLayout = (ConstraintLayout) findViewById(R.id.screenLayout);
+        context = getActivity();
 
-        Button emailButton = (Button)v.findViewById(R.id.email_button);
-        emailButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.d("contact dialog:", "Clicking the Email button");
-                // When button is clicked, call up to owning activity.
-                //((FragmentDialog)getActivity()).showDialog();
-                Intent emailIntent = new Intent(Intent.ACTION_SEND);
-                emailIntent.setType("message/rfc822");
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {email}); // recipients
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Sandy Hill Community Garden");
-                emailIntent.putExtra(Intent.EXTRA_TEXT, "Hi!");
+        for (int i = 0; i < subscreenInterfaceDataObjectListFromDb.size(); i++) {
 
-                PackageManager packageManager = getActivity().getPackageManager();
-                List activities = packageManager.queryIntentActivities(emailIntent,
-                        PackageManager.MATCH_DEFAULT_ONLY);
-                boolean isIntentSafe = activities.size() > 0;
+            if (subscreenInterfaceDataObjectListFromDb.get(i).getClass() == TextfieldDataObject.class) {
+                TextfieldDataObject tdo = (TextfieldDataObject) subscreenInterfaceDataObjectListFromDb.get(i);
+                TextView textView = new TextView(context);
+                textView.setId(View.generateViewId());
+                textView.setText(tdo.getContent());
+                viewObjectMap.put(tdo.getUuid(), textView);
+                constraintLayout.addView(textView);
 
-                if (isIntentSafe) {
-                    startActivity(Intent.createChooser(emailIntent, "Send Email"));
-                }
+            } else if (subscreenInterfaceDataObjectListFromDb.get(i).getClass() == ImageDataObject.class) {
+                ImageDataObject ido = (ImageDataObject) subscreenInterfaceDataObjectListFromDb.get(i);
+                Image imgView = new Image(context, ido.getUri());
+                imgView.setId(View.generateViewId());
+                viewObjectMap.put(ido.getUuid(), imgView);
+                constraintLayout.addView(imgView);
+
+            } else if (subscreenInterfaceDataObjectListFromDb.get(i).getClass() == ButtonDataObject.class){
+                ButtonDataObject bdo = (ButtonDataObject) subscreenInterfaceDataObjectListFromDb.get(i);
+                Button button = new Button(context);
+                button.setId(View.generateViewId());
+                button.setText(bdo.get_label());
+
+                button.setOnClickListener(ButtonOnClicks.getOnClickListener(bdo));
+
+                viewObjectMap.put(bdo.get_uuid(), button);
+                constraintLayout.addView(button);
+
+            } else {
+                Log.i("Making ViewObj Map", "Not an image or a text or a button!");
             }
-        });
+        }
 
-        Button phoneButton = (Button)v.findViewById(R.id.phone_button);
-        phoneButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.d("contact dialog:", "Clicking the Phone button");
-                // When button is clicked, call up to owning activity.
-                //((FragmentDialog)getActivity()).showDialog();
-                Uri phone = Uri.parse(number);
-                Intent phoneIntent = new Intent(Intent.ACTION_DIAL, phone);
-                Log.d("Phone Button: number = ", number);
-                Log.d("Phone Button: phone = ", phone.toString());
-
-                PackageManager packageManager = getActivity().getPackageManager();
-                List activities = packageManager.queryIntentActivities(phoneIntent,
-                        PackageManager.MATCH_DEFAULT_ONLY);
-                boolean isIntentSafe = activities.size() > 0;
-
-                if (isIntentSafe) {
-                    startActivity(Intent.createChooser(phoneIntent, "Make Phone Call"));
-                }
-            }
-        });
-
+        GetconstraintsParameters(constraintLayout);
+        
         return v;
 
+    }
+
+    private void GetconstraintsParameters(ConstraintLayout layout) {
+        Log.i("GetConstraintParameters", "Started");
+        ConstraintSet set = new ConstraintSet();
+
+        ArrayList<ConstraintDataObject> cdo = new ArrayList<ConstraintDataObject>();
+        ConstraintDataObject constraintDataObject = new ConstraintDataObject();
+
+        int startSide = 0;
+        int endSide = 0;
+
+        set.clone(layout);
+/*
+* Idea - go through the view objects and apply constraints
+* */
+        for (String key: viewObjectMap.keySet()) {
+            Log.i("KEY: ", key.toString());
+            //todo: add null checks!
+            cdo = db.GetConstraintsByViewObjectUuid(key);
+            for (int i = 0; i < cdo.size(); i++) {
+                constraintDataObject = cdo.get(i);
+
+                switch (constraintDataObject.getStartSide()) {
+
+                    case "BOTTOM":
+                        startSide = ConstraintSet.BOTTOM;
+                        break;
+
+                    case "TOP":
+                        startSide = ConstraintSet.TOP;
+                        break;
+
+                    case "START":
+                        startSide = ConstraintSet.START;
+                        break;
+
+                    case "END":
+                        startSide = ConstraintSet.END;
+                        break;
+                }
+
+                switch (constraintDataObject.getEndSide()) {
+                    case "BOTTOM":
+                        endSide = ConstraintSet.BOTTOM;
+                        break;
+
+                    case "TOP":
+                        endSide = ConstraintSet.TOP;
+                        break;
+
+                    case "START":
+                        endSide = ConstraintSet.START;
+                        break;
+
+                    case "END":
+                        endSide = ConstraintSet.END;
+                        break;
+                }
+
+                Log.i("constraint object endID", constraintDataObject.getEndId());
+                set.connect(viewObjectMap.get(key).getId(),
+                        startSide,
+                        viewObjectMap.get(constraintDataObject.getEndId()).getId(),
+                        endSide,
+                        constraintDataObject.getMargin());
+            }
+
+        }
+
+        set.applyTo(layout);
     }
 }

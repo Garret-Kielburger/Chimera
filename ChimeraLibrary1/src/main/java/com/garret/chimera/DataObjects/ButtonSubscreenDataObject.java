@@ -12,8 +12,8 @@ public class ButtonSubscreenDataObject implements IDataObject {
     // private variables
     public int _id;
     public String _uuid;
-    public String _screen_uuid;
-    public String _owning_button_uuid;
+    public String _screen_uuid;         // Screen this is associated with
+    public String _owning_button_uuid;  // Button that clicked to this screen
     public String _title;
     public String _purpose;
 
