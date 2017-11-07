@@ -140,7 +140,7 @@ public class ScreenFragment extends Fragment {
         Log.i("The Map: ", viewObjectMap.toString());
         Log.i("The Map at problem: ", "Number of members: " + viewObjectMap.size());
 
-        Log.i("The Layout: ", constraintLayout.toString());
+        //Log.i("The Layout: ", constraintLayout.toString());
 
         GetConstraintsParameters(constraintLayout);
 
@@ -169,7 +169,7 @@ public class ScreenFragment extends Fragment {
 * Idea - go through the view objects and apply constraints
 * */
         for (String key: viewObjectMap.keySet()) {
-            Log.i("KEY: ", key.toString());
+          //  Log.i("KEY: ", key.toString());
             //todo: add null checks!
             cdo = db.GetConstraintsByViewObjectUuid(key);
             for (int i = 0; i < cdo.size(); i++) {
@@ -212,12 +212,17 @@ public class ScreenFragment extends Fragment {
                         break;
                 }
 
-                Log.i("constraint object endID", constraintDataObject.getEndId());
-                set.connect(viewObjectMap.get(key).getId(),
-                        startSide,
-                        viewObjectMap.get(constraintDataObject.getEndId()).getId(),
-                        endSide,
-                        constraintDataObject.getMargin());
+                //Log.i("constraint object endID", constraintDataObject.getEndId());
+                try {
+                    set.connect(viewObjectMap.get(key).getId(),
+                            startSide,
+                            viewObjectMap.get(constraintDataObject.getEndId()).getId(),
+                            endSide,
+                            constraintDataObject.getMargin());
+                } catch (Exception e) {
+                    Log.e("constraint error", "Error: " + e);
+                }
+
             }
 
         }

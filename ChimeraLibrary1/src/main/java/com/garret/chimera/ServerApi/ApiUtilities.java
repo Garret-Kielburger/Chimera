@@ -371,8 +371,8 @@ public class ApiUtilities {
                                                 //todo: null checks
                                                 tdo.setPurpose(text_obj.getString("purpose"));
                                                 String va = text_obj.getString("vertical_align");
-                                                int verta = Integer.parseInt(va);
-                                                tdo.setVerticalAlign(verta);
+                                                //int verta = Integer.parseInt(va);
+                                                //tdo.setVerticalAlign(verta);
 
                                                 //Log.d("SET VERTALIGN JSON ==>", text_obj.toString() );
                                                 //tdo.setVerticalAlign(Integer.parseInt(text_obj.getString("vertical_align")));
@@ -416,7 +416,8 @@ public class ApiUtilities {
                                                 bdo.set_uuid(button_obj.getString("uuid"));
                                                 bdo.set_screen_uuid(button_obj.getString("screen_uuid"));
                                                 bdo.set_button_sub_screen_uuid(button_obj.getString("button_sub_screen_uuid"));
-                                                bdo.set_with_sub_screen(button_obj.getBoolean("with_sub_screen"));
+                                                boolean yesOrNo = button_obj.getInt("with_sub_screen") > 0;
+                                                bdo.set_with_sub_screen(yesOrNo);
                                                 bdo.set_sub_screen_uuid(button_obj.getString("sub_screen_uuid"));
                                                 bdo.set_label(button_obj.getString("label"));
                                                 bdo.set_purpose(button_obj.getString("purpose"));

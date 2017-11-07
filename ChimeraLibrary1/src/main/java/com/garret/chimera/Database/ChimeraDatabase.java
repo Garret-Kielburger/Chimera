@@ -640,37 +640,44 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
             // Get Text data
 
-            String textQuery = "SELECT * FROM " + TABLE_TEXTS + " WHERE " + KEY_SCREEN_UUID + " =?";
-            //Cursor textCursor = db.rawQuery(textQuery, null);
-            Cursor textCursor = db.rawQuery(textQuery, new String[]{screen_uuid.toString()});
+            String textQuery = "SELECT * FROM " + TABLE_TEXTS + " WHERE " + KEY_SCREEN_UUID + " = ? " + " AND " + KEY_BUTTON_SUB_SCREEN_UUID + " = ?";
+            //String textQuery = "SELECT * FROM texts WHERE screen_uuid = ? AND button_sub_screen_uuid IS NULL";
+            Cursor textCursor = db.rawQuery(textQuery, new String[]{screen_uuid, "null"});
+
+            //Cursor textCursor = db.query(TABLE_TEXTS, null, KEY_SCREEN_UUID + "=?", new String[]{screen_uuid}, null, null, null);
+
             Log.e("Text cursor", DatabaseUtils.dumpCursorToString(textCursor));
 
             if (textCursor.moveToFirst()) {
                 do {
-                    // fields: id       (0)     int
-                    // uuid             (1)     String
-                    // screen_uuid      (2)     String
-                    // button_sub_screen_uuid (3) String
-                    // purpose          (4)     String
-                    // vertical align   (5)     int
-                    // horizontal align (6)     int
-                    // content          (7)     String]
-                    TextfieldDataObject tdo = new TextfieldDataObject();
-                    tdo.setUuid(textCursor.getString(1));
-                    tdo.setScreenUuid(screen_uuid);  //---> Screen UUID needed in each element?
-                    tdo.setButtonSubscreenUuid(textCursor.getString(3));
-                    tdo.setPurpose(textCursor.getString(4));
-                    //tdo.setVerticalAlign(textCursor.getInt(4));
-                    //todo: remove old debug Logs
-                    //Log.i("Textfield getVerticalAlign()", tdo.getVerticalAlign().toString());
+                    Log.e("textCursor at 3:", textCursor.getString(3).toString());
+                    Log.e("boolean of textCursor:", Boolean.toString(textCursor.getString(3).equals("null")));
+                    // WHERE KEY_SUB_SCREEN_UUID IS NULL is not working for some reason? returns nothing at all.
+                        // fields: id       (0)     int
+                        // uuid             (1)     String
+                        // screen_uuid      (2)     String
+                        // button_sub_screen_uuid (3) String
+                        // purpose          (4)     String
+                        // vertical align   (5)     int
+                        // horizontal align (6)     int
+                        // content          (7)     String]
+                        TextfieldDataObject tdo = new TextfieldDataObject();
+                        tdo.setUuid(textCursor.getString(1));
+                        tdo.setScreenUuid(screen_uuid);  //---> Screen UUID needed in each element?
+                        Log.e("TEXT BUTTON_SUB_SCREEN_UUID", textCursor.getString(3));
+                        tdo.setButtonSubscreenUuid(textCursor.getString(3));
+                        tdo.setPurpose(textCursor.getString(4));
+                        //tdo.setVerticalAlign(textCursor.getInt(4));
+                        //todo: remove old debug Logs
+                        //Log.i("Textfield getVerticalAlign()", tdo.getVerticalAlign().toString());
 
-                    //tdo.setHorizontalAlign(textCursor.getInt(5));
-                    tdo.setContent(textCursor.getString(7));
+                        //tdo.setHorizontalAlign(textCursor.getInt(5));
+                        tdo.setContent(textCursor.getString(7));
 
-                    Log.i("<====== TEXT CURSOR ======> ", DatabaseUtils.dumpCursorToString(textCursor));
+                        Log.i("<====== TEXT CURSOR ======> ", DatabaseUtils.dumpCursorToString(textCursor));
 
 
-                    interfaceDataObjectList.add(tdo);
+                        interfaceDataObjectList.add(tdo);
 
                 } while (textCursor.moveToNext());
             }
@@ -679,8 +686,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
             // Get Image data
 
-            String imageQuery = "SELECT * FROM " + TABLE_IMAGES + " WHERE " + KEY_SCREEN_UUID + " =?";
-            Cursor imageCursor = db.rawQuery(imageQuery, new String[]{screen_uuid.toString()});
+            String imageQuery = "SELECT * FROM " + TABLE_IMAGES + " WHERE " + KEY_SCREEN_UUID + " = ? " + " AND " + KEY_BUTTON_SUB_SCREEN_UUID + " = ?";
+            Cursor imageCursor = db.rawQuery(imageQuery, new String[]{screen_uuid, "null"});
             Log.e("Image cursor", DatabaseUtils.dumpCursorToString(imageCursor));
 
             if (imageCursor.moveToFirst()) {
@@ -716,8 +723,8 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
             // Get Button data
 
-            String buttonQuery = "SELECT * FROM " + TABLE_BUTTONS + " WHERE " + KEY_SCREEN_UUID + " =?";
-            Cursor buttonCursor = db.rawQuery(buttonQuery, new String[]{screen_uuid.toString()});
+            String buttonQuery = "SELECT * FROM " + TABLE_BUTTONS + " WHERE " + KEY_SCREEN_UUID + " = ? " + " AND " + KEY_BUTTON_SUB_SCREEN_UUID + " = ?";
+            Cursor buttonCursor = db.rawQuery(buttonQuery, new String[]{screen_uuid, "null"});
             Log.e("Button cursor", DatabaseUtils.dumpCursorToString(buttonCursor));
 
             if (buttonCursor.moveToFirst()) {
@@ -783,7 +790,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
     }
 
-    public ArrayList<IDataObject> getSubScreenDataByUuid(String uuid) {
+    public ArrayList<IDataObject> getSubScreenDataByUuid(String sub_screen_uuid) {
         subscreenInterfaceDataObjectList.clear();
 
         // GET sub_screen by sub_screen_count integer.
@@ -828,7 +835,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
             String textQuery = "SELECT * FROM " + TABLE_TEXTS + " WHERE " + KEY_BUTTON_SUB_SCREEN_UUID + " =?";
             //Cursor textCursor = db.rawQuery(textQuery, null);
-            Cursor textCursor = db.rawQuery(textQuery, new String[]{sub_screen_uuid.toString()});
+            Cursor textCursor = db.rawQuery(textQuery, new String[]{sub_screen_uuid});
             Log.e("Subscreen Text cursor", DatabaseUtils.dumpCursorToString(textCursor));
 
             if (textCursor.moveToFirst()) {
@@ -865,7 +872,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             // Get Image data
 
             String imageQuery = "SELECT * FROM " + TABLE_IMAGES + " WHERE " + KEY_BUTTON_SUB_SCREEN_UUID + " =?";
-            Cursor imageCursor = db.rawQuery(imageQuery, new String[]{sub_screen_uuid.toString()});
+            Cursor imageCursor = db.rawQuery(imageQuery, new String[]{sub_screen_uuid});
             Log.e("Subscreen Image cursor", DatabaseUtils.dumpCursorToString(imageCursor));
 
             if (imageCursor.moveToFirst()) {
@@ -902,7 +909,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             // Get Button data
 
             String buttonQuery = "SELECT * FROM " + TABLE_BUTTONS + " WHERE " + KEY_BUTTON_SUB_SCREEN_UUID + " =?";
-            Cursor buttonCursor = db.rawQuery(buttonQuery, new String[]{sub_screen_uuid.toString()});
+            Cursor buttonCursor = db.rawQuery(buttonQuery, new String[]{sub_screen_uuid});
             Log.e("Subscreen Button cursor", DatabaseUtils.dumpCursorToString(buttonCursor));
 
             if (buttonCursor.moveToFirst()) {
@@ -971,6 +978,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
         try {
             SQLiteDatabase db = getReadableDatabase();
+            //String query = "SELECT * FROM " + TABLE_CONSTRAINTS + " WHERE " + KEY_SCREEN_UUID + " = ?";
             String query = "SELECT * FROM " + TABLE_CONSTRAINTS + " WHERE " + KEY_SCREEN_UUID + " = ?";
             Cursor cursor = db.rawQuery(query, new String[]{uuid});
             Log.i("GetConstraintsByUUID cursor:", DatabaseUtils.dumpCursorToString(cursor));
@@ -1012,7 +1020,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
         try {
             SQLiteDatabase db = getReadableDatabase();
-            String button_sub_screen_query = "SELECT * FROM " + TABLE_BUTTONS_SUBSCREENS + "WHERE " + KEY_OWNING_BUTTON_UUID + " =?";
+            String button_sub_screen_query = "SELECT * FROM " + TABLE_BUTTONS_SUBSCREENS + " WHERE " + KEY_OWNING_BUTTON_UUID + " =?";
             Cursor button_sub_screen_cursor = db.rawQuery(button_sub_screen_query, new String[]{given_owning_button_uuid});
 
             Log.e("Button Subscreen Cursor:", DatabaseUtils.dumpCursorToString(button_sub_screen_cursor));
@@ -1053,7 +1061,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
             SQLiteDatabase db = getReadableDatabase();
             String query = "SELECT * FROM " + TABLE_CONSTRAINTS + " WHERE " + KEY_START_ID + " = ?";
             Cursor cursor = db.rawQuery(query, new String[]{uuid});
-            Log.i("GetConstraintsByUUID cursor:", DatabaseUtils.dumpCursorToString(cursor));
+            //Log.i("GetConstraintsByUUID cursor:", DatabaseUtils.dumpCursorToString(cursor));
             if (cursor.moveToFirst()) {
                 do {
                     //fields:

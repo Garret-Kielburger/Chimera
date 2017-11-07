@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +47,7 @@ public class Dialog extends DialogFragment {
     Context context;
 
     static public Dialog newInstance(String button_data_object_uuid) {
+        Log.i("Dialog instance", "Newly made");
         Dialog dialog = new Dialog();
 
         // Supply num input as an argument.
@@ -74,8 +76,8 @@ public class Dialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(bsdo.get_title());
 
-        View v = inflater.inflate(R.layout.contact_dialog, container, false);
-        constraintLayout = (ConstraintLayout) findViewById(R.id.screenLayout);
+        View v = inflater.inflate(R.layout.dialog, container, false);
+        constraintLayout = (ConstraintLayout) v.findViewById(R.id.dialog_layout);
         context = getActivity();
 
         for (int i = 0; i < subscreenInterfaceDataObjectListFromDb.size(); i++) {
@@ -187,4 +189,6 @@ public class Dialog extends DialogFragment {
 
         set.applyTo(layout);
     }
+
+
 }
