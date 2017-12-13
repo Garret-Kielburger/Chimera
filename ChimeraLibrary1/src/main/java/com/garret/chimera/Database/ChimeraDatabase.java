@@ -18,6 +18,7 @@ import com.garret.chimera.DataObjects.AppDataDataObject;
 import com.garret.chimera.DataObjects.ButtonDataObject;
 import com.garret.chimera.DataObjects.ButtonSubscreenDataObject;
 import com.garret.chimera.DataObjects.ConstraintDataObject;
+import com.garret.chimera.DataObjects.CustomWebViewDataObject;
 import com.garret.chimera.DataObjects.IDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
 import com.garret.chimera.DataObjects.TextfieldDataObject;
@@ -46,6 +47,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
     public static final String TABLE_SCREENS = "screens";
     public static final String TABLE_TEXTS = "texts";
     public static final String TABLE_IMAGES = "images";
+    public static final String TABLE_WEB_VIEWS = "web_views";
     public static final String TABLE_BUTTONS = "buttons";
     public static final String TABLE_BUTTONS_SUBSCREENS = "buttons_sub_screens";
     public static final String TABLE_CONSTRAINTS = "constraints";
@@ -74,6 +76,10 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
     // images Column names
     public static final String KEY_URI = "uri";
+
+    // web_views Column names
+
+    public static final String KEY_WEB_ADDRESS = "web_address";
 
     // buttons Column names
     public static final String KEY_BUTTON_SUB_SCREEN_UUID = "button_sub_screen_uuid";
@@ -188,6 +194,20 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         db.insert(TABLE_IMAGES, null, values);
         db.close();
         Log.i(TAG, "Image Data Saved:");
+        Log.i(TAG, values.toString());
+
+    }
+
+    public void SaveWebViewData(CustomWebViewDataObject cwvdo) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_UUID, cwvdo.getUuid());
+        values.put(KEY_SCREEN_UUID, cwvdo.getScreenUuid());
+        values.put(KEY_WEB_ADDRESS, cwvdo.getWebAddress());
+
+        db.insert(TABLE_WEB_VIEWS, null, values);
+        db.close();
+        Log.i(TAG, "Web View Data Saved:");
         Log.i(TAG, values.toString());
 
     }
@@ -518,6 +538,7 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
         db.delete(TABLE_IMAGES, null, null);
         db.delete(TABLE_TEXTS, null, null);
         db.delete(TABLE_SCREENS, null, null);
+        db.delete(TABLE_WEB_VIEWS, null, null);
         db.delete(TABLE_BUTTONS, null, null);
         db.delete(TABLE_BUTTONS_SUBSCREENS, null, null);
         db.delete(TABLE_APP_DATA, null, null);
@@ -720,6 +741,33 @@ public class ChimeraDatabase extends SQLiteAssetHelper {
 
             imageCursor.close();
 
+            // Get CustomWebView data
+
+            String customWebViewQuery = "SELECT * FROM " + TABLE_WEB_VIEWS + " WHERE " + KEY_SCREEN_UUID + " = ?";
+            Cursor customWebViewCursor = db.rawQuery(customWebViewQuery, new String[]{screen_uuid});
+
+            if (customWebViewCursor.moveToFirst()) {
+                do {
+                    // fields: id       (0)     int
+                    // uuid             (1)     String
+                    // screen_uuid      (2)     String
+                    // web_address      (3)     String
+
+                    CustomWebViewDataObject cwvdo = new CustomWebViewDataObject();
+                    cwvdo.setUuid(customWebViewCursor.getString(1));
+                    cwvdo.setScreenUuid(screen_uuid);  //---> Screen UUID needed in each element?
+                    cwvdo.setWebAddress(customWebViewCursor.getString(3));
+                    //todo: remove old debug Logs
+
+                    Log.i("<====== WEB VIEW CURSOR ======> ", DatabaseUtils.dumpCursorToString(customWebViewCursor));
+
+
+                    interfaceDataObjectList.add(cwvdo);
+
+                } while (customWebViewCursor.moveToNext());
+            }
+
+            customWebViewCursor.close();
 
             // Get Button data
 

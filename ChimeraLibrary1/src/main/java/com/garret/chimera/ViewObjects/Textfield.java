@@ -13,7 +13,7 @@ import com.garret.chimera.R;
  * Created by Captain on 14/08/2015.
  *
  * //TODO: IS this class needed? It's just a TextView
- * Even Needed this class?
+ * Even Needed this class? --> Probably for applying styles!
  *
  * Copyright Garret Kielburger - All Rights Reserved.
  */

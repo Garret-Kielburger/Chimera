@@ -169,6 +169,7 @@ public interface Constants {
     public static final String JSON_NODE_SCREENS = "screens";
     public static final String JSON_NODE_TEXTS = "texts";
     public static final String JSON_NODE_IMAGES = "images";
+    public static final String JSON_NODE_WEB_VIEW = "web_views";
     public static final String JSON_NODE_BUTTONS = "buttons";
     public static final String JSON_NODE_BUTTONS_SUB_SCREENS = "buttons_sub_screens";
     public static final String JSON_NODE_CONSTRAINTS = "constraints";

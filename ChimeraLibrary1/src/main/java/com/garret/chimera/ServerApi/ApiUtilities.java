@@ -13,6 +13,7 @@ import com.garret.chimera.Constants;
 import com.garret.chimera.DataObjects.ButtonDataObject;
 import com.garret.chimera.DataObjects.ButtonSubscreenDataObject;
 import com.garret.chimera.DataObjects.ConstraintDataObject;
+import com.garret.chimera.DataObjects.CustomWebViewDataObject;
 import com.garret.chimera.Database.ChimeraDatabase;
 import com.garret.chimera.DataObjects.AppDataDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
@@ -44,6 +45,7 @@ import static com.garret.chimera.Constants.GRANT_TYPE;
 import static com.garret.chimera.Constants.HEADER_TAG_CLIENT_ID;
 import static com.garret.chimera.Constants.HEADER_TAG_CLIENT_SECRET;
 import static com.garret.chimera.Constants.HEADER_TAG_GRANT_TYPE;
+import static com.garret.chimera.Constants.JSON_NODE_WEB_VIEW;
 import static com.garret.chimera.Constants.MAX_ATTEMPTS;
 import static com.garret.chimera.Constants.PROTECTED_GET_ALL_URL;
 import static com.garret.chimera.Constants.SERVER_URL_REGISTER;
@@ -404,6 +406,24 @@ public class ApiUtilities {
                                             }
                                         }
                                     }
+
+                                    JSONArray web_view_array = screens_obj.getJSONArray(JSON_NODE_WEB_VIEW);
+                                    if (web_view_array != null) {
+                                        Log.i("WEBVIEW JSON ARRAY ====>  ", web_view_array.toString());
+                                        for (int k = 0; k < web_view_array.length(); k++) {
+                                            JSONObject web_view_obj = web_view_array.getJSONObject(k);
+                                            if (web_view_obj != null) {
+                                                CustomWebViewDataObject cwvdo = new CustomWebViewDataObject();
+                                                // todo: null checks
+                                                cwvdo.setUuid(web_view_obj.getString("uuid"));
+                                                cwvdo.setScreenUuid(web_view_obj.getString("screen_uuid"));
+                                                cwvdo.setWebAddress(web_view_obj.getString("web_address"));
+
+                                                db.SaveWebViewData(cwvdo);
+                                            }
+                                        }
+                                    }
+
 
                                     JSONArray buttons_array = screens_obj.getJSONArray(JSON_NODE_BUTTONS);
                                     if (buttons_array != null){

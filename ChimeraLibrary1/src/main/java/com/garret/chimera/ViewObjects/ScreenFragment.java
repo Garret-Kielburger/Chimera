@@ -10,17 +10,21 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.garret.chimera.ButtonClicks.ButtonOnClicks;
 import com.garret.chimera.DataObjects.ButtonDataObject;
 import com.garret.chimera.DataObjects.ConstraintDataObject;
+import com.garret.chimera.DataObjects.CustomWebViewDataObject;
 import com.garret.chimera.DataObjects.IDataObject;
 import com.garret.chimera.DataObjects.ImageDataObject;
 import com.garret.chimera.DataObjects.TextfieldDataObject;
 import com.garret.chimera.Database.ChimeraDatabase;
+import com.garret.chimera.FetchWebClient;
 import com.garret.chimera.R;
 
 import java.util.ArrayList;
@@ -114,6 +118,24 @@ public class ScreenFragment extends Fragment {
                 viewObjectMap.put(ido.getUuid(), img);
                 //img.imageHolder.setGravity(params.gravity);
                 constraintLayout.addView(img);
+
+            } else if (interfaceDataObjectListFromDb.get(i).getClass() == CustomWebViewDataObject.class) {
+                CustomWebViewDataObject cwvdo = (CustomWebViewDataObject) interfaceDataObjectListFromDb.get(i);
+                textOrImageOrButton = "web_view";
+
+                ProgressBar progressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal);
+                WebView webView = new WebView(context);
+/*                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT);
+                webView.setLayoutParams(params);*/
+                webView.getSettings().setJavaScriptEnabled(true);
+
+                webView.setWebViewClient(new FetchWebClient(progressBar));
+
+                webView.loadUrl(cwvdo.getWebAddress());
+
+                constraintLayout.addView(webView);
+
+                return v;
 
             } else if (interfaceDataObjectListFromDb.get(i).getClass() == ButtonDataObject.class){
                 ButtonDataObject bdo = (ButtonDataObject) interfaceDataObjectListFromDb.get(i);
